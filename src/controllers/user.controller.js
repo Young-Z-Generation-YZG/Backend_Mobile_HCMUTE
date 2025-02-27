@@ -1,4 +1,4 @@
-const { OK, CREATED } = require("../core/success.response");
+const { OK, CREATED } = require("../domain/core/success.response");
 const {
     getProfile
 } = require("../services/user.service");
