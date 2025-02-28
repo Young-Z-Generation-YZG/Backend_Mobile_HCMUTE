@@ -70,7 +70,35 @@ router.post('/login', ErrorHandler(AccessController.login));
 
 /**
  * @swagger
- * /api/v1/auth/verify:
+ * /api/v1/auth/otp-verify:
+ *   get:
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: q is jwt token.
+ *       - in: query
+ *         name: verify_type
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: verify_type ["email", "resetPassword"].
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/otp-verify', ErrorHandler(AccessController.verifyOtpPage));
+
+/**
+ * @swagger
+ * /api/v1/auth/send-mail-token:
  *   get:
  *     tags: [Auth]
  *     parameters:
@@ -80,28 +108,12 @@ router.post('/login', ErrorHandler(AccessController.login));
  *           type: string
  *         required: true
  *         description: q is jwt mail token.
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get('/verify', ErrorHandler(AccessController.verify));
-
-/**
- * @swagger
- * /api/v1/auth/sendMailToken:
- *   get:
- *     tags: [Auth]
- *     parameters:
  *       - in: query
- *         name: q
+ *         name: verify_type
  *         schema:
  *           type: string
  *         required: true
- *         description: q is jwt mail token.
+ *         description: verify_type ["email", "resetPassword"].
  *     responses:
  *       '200':
  *         description: OK
@@ -110,11 +122,11 @@ router.get('/verify', ErrorHandler(AccessController.verify));
  *             schema:
  *               type: object
  */
-router.get('/sendMailToken', ErrorHandler(AccessController.sendMailToken));
+router.get('/send-mail-token', ErrorHandler(AccessController.sendMailToken));
 
 /**
  * @swagger
- * /api/v1/auth/verifyEmail:
+ * /api/v1/auth/verify-email:
  *  post:
  *   tags: [Auth]
  *   requestBody:
@@ -126,7 +138,7 @@ router.get('/sendMailToken', ErrorHandler(AccessController.sendMailToken));
  *        properties:
  *         q:
  *          type: string
- *         mailOtp:
+ *         otp:
  *          type: string
  *   responses:
  *    '200':
@@ -136,6 +148,127 @@ router.get('/sendMailToken', ErrorHandler(AccessController.sendMailToken));
  *        schema:
  *         type: object
  */
-router.post('/verifyEmail', ErrorHandler(AccessController.verifyEmail));
+router.post('/verify-email', ErrorHandler(AccessController.verifyEmail));
+
+/**
+ * @swagger
+ * /api/v1/auth/otp-recover:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         email:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post('/otp-recover', ErrorHandler(AccessController.recoverOtp));
+
+/**
+ * @swagger
+ * /api/v1/auth/otp-reset-password:
+ *   get:
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: q is jwt for reset password.
+ *       - in: query
+ *         name: verify_type
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: verify_type ["email", "resetPassword"].
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+   '/otp-reset-password',
+   ErrorHandler(AccessController.resetPasswordPage),
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/otp-reset-password:
+ *   post:
+ *    tags: [Auth]
+ *    parameters:
+ *      - in: query
+ *        name: q
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: q is jwt token.
+ *    requestBody:
+ *     required: true
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *        properties:
+ *         password:
+ *          type: string
+ *         confirmPassword:
+ *          type: string
+ *    responses:
+ *     '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *         properties:
+ */
+router.post(
+   '/otp-reset-password',
+   ErrorHandler(AccessController.resetPassword),
+);
+
+/**
+ * @swagger
+ * /api/v1/auth/otp-verify-reset-password:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         q:
+ *          type: string
+ *         otp:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post(
+   '/otp-verify-reset-password',
+   ErrorHandler(AccessController.verifyResetPasswordOtp),
+);
 
 module.exports = router;

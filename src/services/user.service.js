@@ -75,6 +75,23 @@ class UserService {
          throw new Error(err);
       }
    };
+
+   updatePassword = async (email, password) => {
+      try {
+         const user = await userModel.findOneAndUpdate(
+            {
+               email: email,
+            },
+            {
+               password: password,
+            },
+         );
+
+         return user;
+      } catch (err) {
+         throw new Error(err);
+      }
+   };
 }
 
 module.exports = new UserService();

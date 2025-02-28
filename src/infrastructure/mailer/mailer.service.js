@@ -42,13 +42,17 @@ const sendEmail = async ({ to = '', name = '', mailOtp }) => {
       },
    };
 
-   transporter.sendMail(options, function (error, info) {
-      if (error) {
-         console.log(error);
-      } else {
-         console.log('Email sent: ' + info.response);
-      }
-   });
+   try {
+      transporter.sendMail(options, function (error, info) {
+         if (error) {
+            console.log(error);
+         } else {
+            console.log('Email sent: ' + info.response);
+         }
+      });
+   } catch (error) {
+      throw new Error(error);
+   }
 };
 
 const sendEmailResetPassword = async ({
@@ -70,18 +74,53 @@ const sendEmailResetPassword = async ({
       },
    };
 
-   transporter.sendMail(options, function (error, info) {
-      if (error) {
-         console.log(error);
-      } else {
-         console.log('Email sent: ' + info.response);
-      }
-   });
+   try {
+      transporter.sendMail(options, function (error, info) {
+         if (error) {
+            console.log(error);
+         } else {
+            console.log('Email sent: ' + info.response);
+         }
+      });
+   } catch (error) {
+      throw new Error(error);
+   }
 
    return resetOtp;
+};
+
+const sendEmailResetPasswordWithOtp = async ({
+   to = '',
+   email = '',
+   resetPasswordOtp = '',
+}) => {
+   var options = {
+      from: MAILER_SENDER,
+      to,
+      subject: '[RESET_PASSWORD] Clothing store notification',
+      text: `Hii ${email} !`,
+      template: 'forget-password',
+      context: {
+         name: email,
+         resetPasswordOtp: resetPasswordOtp,
+      },
+   };
+
+   try {
+      transporter.sendMail(options, function (error, info) {
+         if (error) {
+            console.log(error);
+         } else {
+            console.log('Email sent: ' + info.response);
+         }
+      });
+   } catch (error) {
+      throw new Error(error);
+   }
 };
 
 module.exports = {
    sendEmail,
    sendEmailResetPassword,
+   sendEmailResetPasswordWithOtp,
 };

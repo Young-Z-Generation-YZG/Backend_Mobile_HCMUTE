@@ -19,11 +19,19 @@ class AccessController {
       }).send(res);
    }
 
-   async verify(req, res) {
+   async verifyOtpPage(req, res) {
       return new OK({
          message: 'OK',
          statusCode: 200,
-         data: await AccessService.verify(req),
+         data: await AccessService.verifyOtpPage(req),
+      }).send(res);
+   }
+
+   async resetPasswordPage(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.resetPasswordPage(req),
       }).send(res);
    }
 
@@ -40,6 +48,38 @@ class AccessController {
          message: 'OK',
          statusCode: 200,
          data: await AccessService.verifyEmail(req),
+      }).send(res);
+   }
+
+   // async recoverUrl(req, res) {
+   //    return new OK({
+   //       message: 'OK',
+   //       statusCode: 200,
+   //       data: await AccessService.recoverUrl(req),
+   //    }).send(res);
+   // }
+
+   async recoverOtp(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.recoverOtp(req),
+      }).send(res);
+   }
+
+   async resetPassword(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.resetPassword(req),
+      }).send(res);
+   }
+
+   async verifyResetPasswordOtp(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.verifyResetPasswordOtp(req),
       }).send(res);
    }
 }

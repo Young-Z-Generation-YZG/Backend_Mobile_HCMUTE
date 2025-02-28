@@ -80,12 +80,16 @@ class Redis {
       return this.instance;
    }
 
-   static async set(key, value) {
+   static async set(
+      key,
+      value,
+      options = {
+         EX: expiredInSecs, // 5 minutes
+      },
+   ) {
       const instance = await this.connect();
 
-      return await instance.client.set(key, value, {
-         EX: expiredInSecs, // 5 minutes
-      });
+      return await instance.client.set(key, value, options);
    }
 
    static async get(key) {
