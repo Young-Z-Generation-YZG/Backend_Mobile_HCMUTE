@@ -14,6 +14,7 @@ dotenv.config({
 
 module.exports = {
    app: {
+      nodeEnv: env,
       httpPort: process.env.HTTP_PORT,
       httpsPort: process.env.HTTPS_PORT,
       sslEnable: process.env.SSL_ENABLE === 'true',

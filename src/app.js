@@ -5,6 +5,7 @@ const path = require('path');
 
 // configs
 const MongoDatabase = require('./infrastructure/persistence/mongo.db');
+const Redis = require('./infrastructure/redis');
 
 const { assetPath } = require('../public');
 
@@ -38,6 +39,17 @@ registerMiddlewares(app);
 
 // Connect to database
 MongoDatabase.connect();
+
+// Connect to Redis
+(async () => {
+   try {
+      await Redis.connect();
+
+      console.log('[LOG:REDIS]:: Redis connection initialized');
+   } catch (error) {
+      console.error('[LOG:REDIS]:: Failed to initialize Redis', error);
+   }
+})();
 
 // Register routes
 const router = require('./routes');
