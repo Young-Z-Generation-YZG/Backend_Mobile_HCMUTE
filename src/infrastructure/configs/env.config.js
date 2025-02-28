@@ -12,26 +12,37 @@ dotenv.config({
    path: `.env.${env}`,
 });
 
+const SSL_ENABLE = process.env.SSL_ENABLE === 'true';
+
+const PORT = SSL_ENABLE
+   ? process.env.HTTPS_PORT
+   : process.env.HTTP_PORT ?? 3000;
+
 module.exports = {
    app: {
-      nodeEnv: env,
-      httpPort: process.env.HTTP_PORT,
-      httpsPort: process.env.HTTPS_PORT,
-      sslEnable: process.env.SSL_ENABLE === 'true',
+      NODE_ENV: env,
+      SSL_ENABLE: SSL_ENABLE,
+      HTTP_PORT: process.env.HTTP_PORT,
+      HTTPS_PORT: process.env.HTTPS_PORT,
+      RUNNING_PORT: PORT,
    },
    db: {
-      host: process.env.DB_HOST,
-      port: process.env.DB_PORT,
-      name: process.env.DB_NAME,
+      DB_HOST: process.env.DB_HOST,
+      DB_PORT: process.env.DB_PORT,
+      DB_NAME: process.env.DB_NAME,
    },
    jwt: {
-      secretKey: process.env.JWT_SECRET,
-      accessTokenExpiration: process.env.AT_EXPIRED_IN,
-      refreshTokenExpiration: process.env.RT_EXPIRED_IN,
+      JWT_SECRET: process.env.JWT_SECRET,
+      AT_EXPIRED_IN: process.env.AT_EXPIRED_IN,
+      RT_EXPIRED_IN: process.env.RT_EXPIRED_IN,
    },
    mailer: {
-      sender: process.env.MAILER_SENDER,
-      password: process.env.MAILER_PASSWORD,
-      tokenExpiration: process.env.MAILER_TOKEN_EXPIRED_IN,
+      MAILER_SENDER: process.env.MAILER_SENDER,
+      MAILER_SENDER_NAME: process.env.MAILER_SENDER_NAME,
+      MAILER_PASSWORD: process.env.MAILER_PASSWORD,
+      MAILER_TOKEN_EXPIRED_IN: process.env.MAILER_TOKEN_EXPIRED_IN,
+   },
+   redis: {
+      REDIS_EXPIRED_IN: process.env.REDIS_EXPIRED_IN,
    },
 };

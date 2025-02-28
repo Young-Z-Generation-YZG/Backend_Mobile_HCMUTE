@@ -1,32 +1,35 @@
+const {
+   app: { RUNNING_PORT },
+} = require('../../infrastructure/configs/env.config');
+
 module.exports = options = {
-    definition: {
-      openapi: "3.0.0",
+   definition: {
+      openapi: '3.0.0',
       info: {
-        title: "Library APIs",
-        version: "1.0.0",
-        description: "Clothing store library APIs",
+         title: 'Library APIs',
+         version: '1.0.0',
+         description: 'Clothing store library APIs',
       },
       servers: [
-        {
-          url: `http://localhost:${process.env.PORT}`,
-        },
+         {
+            url: `http://localhost:${RUNNING_PORT}`,
+         },
       ],
       components: {
-        responses: {},
-        securitySchemes: {
-          BearerAuth: {
-            type: "http",
-            scheme: "bearer",
-            bearerFormat: "JWT",
-          },
-        },
+         responses: {},
+         securitySchemes: {
+            BearerAuth: {
+               type: 'http',
+               scheme: 'bearer',
+               bearerFormat: 'JWT',
+            },
+         },
       },
       security: [
-        {
-          BearerAuth: [],
-        },
+         {
+            BearerAuth: [],
+         },
       ],
-    },
-    apis: ["./src/routes/**/*.js"],
-  };
-  
+   },
+   apis: ['./src/routes/**/*.js'],
+};

@@ -1,44 +1,47 @@
-const { ReasonPhrases, StatusCode } = require("../utils/http");
+const {
+   ReasonPhrases,
+   StatusCode,
+} = require('../../infrastructure/utils/http');
 
 class ErrorResponse extends Error {
-  status = null;
+   status = null;
 
-  constructor(message, status) {
-    super(message);
+   constructor(message, status) {
+      super(message);
 
-    this.status = status;
-  }
+      this.status = status;
+   }
 }
 
 class BadRequestError extends ErrorResponse {
-  constructor(
-    message = ReasonPhrases.BAD_REQUEST,
-    status = StatusCode.BAD_REQUEST
-  ) {
-    super(message, status);
-  }
+   constructor(
+      message = ReasonPhrases.BAD_REQUEST,
+      status = StatusCode.BAD_REQUEST,
+   ) {
+      super(message, status);
+   }
 }
 
 class AuthenticationError extends ErrorResponse {
-  constructor(
-    message = ReasonPhrases.UNAUTHORIZED,
-    status = StatusCode.UNAUTHORIZED
-  ) {
-    super(message, status);
-  }
+   constructor(
+      message = ReasonPhrases.UNAUTHORIZED,
+      status = StatusCode.UNAUTHORIZED,
+   ) {
+      super(message, status);
+   }
 }
 
 class NotFoundError extends ErrorResponse {
-  constructor(
-    message = ReasonPhrases.NOT_FOUND,
-    status = StatusCode.NOT_FOUND
-  ) {
-    super(message, status);
-  }
+   constructor(
+      message = ReasonPhrases.NOT_FOUND,
+      status = StatusCode.NOT_FOUND,
+   ) {
+      super(message, status);
+   }
 }
 
 module.exports = {
-  BadRequestError,
-  AuthenticationError,
-  NotFoundError,
+   BadRequestError,
+   AuthenticationError,
+   NotFoundError,
 };

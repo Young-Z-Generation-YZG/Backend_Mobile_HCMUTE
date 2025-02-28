@@ -2,6 +2,11 @@
 
 const redis = require('redis');
 const { REDIS_STATUS } = require('../../common/constants');
+const {
+   redis: { REDIS_EXPIRED_IN },
+} = require('../configs/env.config');
+
+const expiredInSecs = Number(REDIS_EXPIRED_IN) || 60 * 5; // 5 minutes
 
 class Redis {
    instance = null;
@@ -23,26 +28,26 @@ class Redis {
          this.isConnected = true;
 
          this.client.on(REDIS_STATUS.CONNECT, () => {
-            console.info('[LOG:REDIS]:: Connected to Redis');
+            console.log('[LOG:REDIS]:: Connected to Redis');
          });
 
          this.client.on(REDIS_STATUS.ERROR, (error) => {
-            console.warn('[LOG:REDIS]:: Failure connecting to Redis', error);
+            console.warn('[WARN:REDIS]:: Failure connecting to Redis', error);
 
             this.isConnected = false;
          });
 
          this.client.on(REDIS_STATUS.END, () => {
-            console.info('[LOG:REDIS]:: Connection to Redis closed');
+            console.log('[LOG:REDIS]:: Connection to Redis closed');
 
             this.isConnected = false;
          });
 
          this.client.on(REDIS_STATUS.RECONNECT, () => {
-            console.info('[LOG:REDIS]:: Reconnecting to Redis');
+            console.log('[LOG:REDIS]:: Reconnecting to Redis...');
          });
       } catch (error) {
-         console.error('[LOG:REDIS]:: Setup connection failed', error);
+         console.error('[ERROR:REDIS]:: Setup connection failed', error);
 
          this.isConnected = false;
 
@@ -78,7 +83,9 @@ class Redis {
    static async set(key, value) {
       const instance = await this.connect();
 
-      return await instance.client.set(key, value);
+      return await instance.client.set(key, value, {
+         EX: expiredInSecs, // 5 minutes
+      });
    }
 
    static async get(key) {

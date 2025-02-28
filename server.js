@@ -2,15 +2,15 @@ const server = require('./src/app');
 
 const {
    loadEnv,
-   app: { httpPort, httpsPort, sslEnable, nodeEnv },
+   app: { NODE_ENV, RUNNING_PORT, SSL_ENABLE },
 } = require('./src/infrastructure/configs/env.config');
 
 // Load environment variables
 
-console.info('[LOG:SSL_ENABLE]::', sslEnable);
+console.info('[LOG:SSL_ENABLE]::', SSL_ENABLE);
 
-const PORT = sslEnable ? httpsPort : httpPort ?? 3000;
-
-server.listen(PORT, () => {
-   console.info(`[LOG:PORT]:: Server is running in ${nodeEnv} port ${PORT}`);
+server.listen(RUNNING_PORT, () => {
+   console.info(
+      `[LOG:PORT]:: Server is running in ${NODE_ENV} port ${RUNNING_PORT}`,
+   );
 });

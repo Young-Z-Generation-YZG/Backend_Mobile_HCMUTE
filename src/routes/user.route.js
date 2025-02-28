@@ -1,9 +1,9 @@
-const express = require("express");
+const express = require('express');
 const router = express.Router();
 
-const ErrorHandler = require("../infrastructure/utils/catchError.js");
+const ErrorHandler = require('../infrastructure/utils/catch-error');
 
-const userController = require("../controllers/user.controller.js");
+const userController = require('../controllers/user.controller');
 
 /**
  * @swagger
@@ -18,9 +18,6 @@ const userController = require("../controllers/user.controller.js");
  *             schema:
  *               type: object
  */
-router.get(
-    "/profile",    
-    ErrorHandler(userController.getProfile)
-);
+router.get('/profile', ErrorHandler(userController.getProfile));
 
 module.exports = router;

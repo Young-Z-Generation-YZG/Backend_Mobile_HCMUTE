@@ -1,10 +1,10 @@
 const mongoose = require('mongoose');
 
 const {
-   db: { host, port, name },
+   db: { DB_HOST, DB_NAME, DB_PORT },
 } = require('../configs/env.config');
 
-const CONNECTION_STR = `mongodb://${host}:${port}/${name}`;
+const CONNECTION_STR = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
 
 class MongoDatabase {
    instance = null;
