@@ -45,4 +45,11 @@ module.exports = {
    redis: {
       REDIS_EXPIRED_IN: process.env.REDIS_EXPIRED_IN,
    },
+   cloudinary: {
+      CLOUDINARY_CLOUD_NAME: process.env.CLOUDINARY_CLOUD_NAME,
+      CLOUDINARY_API_KEY: process.env.CLOUDINARY_API_KEY,
+      CLOUDINARY_API_SECRET: process.env.CLOUDINARY_API_SECRET,
+      CLOUDINARY_URL: process.env.CLOUDINARY_URL,
+      CLOUDINARY_FOLDER: process.env.CLOUDINARY_FOLDER,
+   },
 };
