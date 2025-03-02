@@ -2,22 +2,88 @@ const productModel = require('../domain/models/product.model');
 const reviewModel = require('../domain/models/review.model');
 const invoiceModel = require('../domain/models/invoice.model');
 
+const {
+   minimumCloudinaryImg,
+} = require('../infrastructure/utils/minimum-cloudinary-img');
+
 class ProductService {
    // [GET] /api/v1/products
-   getAll = async () => {
+   getAll = async (req) => {
+      const {
+         _page = 1,
+         _limit = 10,
+         _sort = 'asc',
+         _sortBy = 'createdAt',
+      } = req.query;
+
+      // Validate inputs
+      const page = parseInt(_page, 10);
+      const limit = parseInt(_limit, 10);
+      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
+      const sortField = _sortBy || 'createdAt';
+
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Invalid page number');
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+         throw new BadRequestError('Invalid limit value (1-100)');
+      }
+
+      // Calculate skip for pagination
+      const skip = (page - 1) * limit;
+
+      // Build sort object
+      const sortObj = { [sortField]: sortDirection };
+
+      // Get total count for pagination metadata
+      const totalItems = await productModel.countDocuments();
+
+      // Fetch products with pagination, sorting, and population
       const products = await productModel
          .find()
-         .populate('product_category')
+         .populate({
+            path: 'product_category',
+            select: 'category_name category_slug',
+         })
          .populate({
             path: 'product_promotion.promotion_id',
             model: 'Promotion',
             match: {
-               start_date: { $lte: new Date() },
-               end_date: { $gt: new Date() },
+               promotion_start_date: { $lte: new Date() },
+               promotion_end_date: { $gt: new Date() },
             },
-         });
+            select:
+               'promotion_name promotion_value promotion_start_date promotion_end_date is_active',
+         })
+         .sort(sortObj)
+         .skip(skip)
+         .limit(limit)
+         .lean(); // Better performance with plain objects
 
-      return products;
+      // Calculate pagination metadata
+      const totalPages = Math.ceil(totalItems / limit);
+
+      const finalData = products.map((p) => {
+         const images = minimumCloudinaryImg(p.product_imgs);
+
+         return {
+            ...p,
+            product_imgs: images,
+         };
+      });
+
+      return {
+         statusCode: 200,
+         message: 'Products retrieved successfully',
+         data: finalData,
+         meta: {
+            totalItems,
+            totalPages,
+            currentPage: page,
+            itemsPerPage: limit,
+         },
+      };
    };
 
    // [GET] /api/v1/products/best-sellers

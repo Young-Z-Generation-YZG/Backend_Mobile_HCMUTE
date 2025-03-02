@@ -10,6 +10,40 @@ const productController = require('../controllers/product.controller');
  * /api/v1/products:
  *   get:
  *     tags: [Products]
+ *     parameters:
+ *       - in: query
+ *         name: _page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: _limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *         example: 3
+ *       - in: query
+ *         name: _sort
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort direction
+ *         example: desc
+ *       - in: query
+ *         name: _sortBy
+ *         schema:
+ *           type: string
+ *           enum: [product_price, createdAt, updatedAt]
+ *           default: createdAt
+ *         description: Field to sort by
+ *         example: product_price
  *     responses:
  *       '200':
  *         description: OK

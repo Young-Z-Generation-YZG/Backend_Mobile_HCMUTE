@@ -4,8 +4,8 @@ const {
    db: { DB_HOST, DB_NAME, DB_PORT, DB_ATLAS_URL },
 } = require('../configs/env.config');
 
-const CONNECTION_STR = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
-// const CONNECTION_STR = DB_ATLAS_URL;
+// const CONNECTION_STR = `mongodb://${DB_HOST}:${DB_PORT}/${DB_NAME}`;
+const CONNECTION_STR = DB_ATLAS_URL;
 
 class MongoDatabase {
    instance = null;

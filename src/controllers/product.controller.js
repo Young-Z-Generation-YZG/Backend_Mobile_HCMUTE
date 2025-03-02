@@ -6,7 +6,7 @@ class ProductController {
       new OK({
          message: 'OK',
          statusCode: 200,
-         data: await productService.getAll(),
+         data: await productService.getAll(req),
       }).send(res);
    }
 
