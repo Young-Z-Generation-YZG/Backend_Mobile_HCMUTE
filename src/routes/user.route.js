@@ -2,6 +2,9 @@ const express = require('express');
 const router = express.Router();
 
 const ErrorHandler = require('../infrastructure/utils/catch-error');
+const {
+   upload: uploadMiddleware,
+} = require('../middlewares/upload.middleware.js');
 
 const { authenticationMiddleware } = require('../middlewares/auth.middleware');
 
@@ -160,5 +163,35 @@ router.patch('/password', ErrorHandler(userController.changeCurrentPassword));
  *         type: object
  */
 router.patch('/phone-number', ErrorHandler(userController.changePhoneNumber));
+
+/**
+ * @swagger
+ * /api/v1/users/profile-image:
+ *   post:
+ *     tags: [User]
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         multipart/form-data:
+ *           schema:
+ *             type: object
+ *             properties:
+ *               image:
+ *                 type: string
+ *                 format: binary
+ *                 description: The profile image file to upload
+ *     responses:
+ *       200:
+ *         description: Profile image uploaded successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.post(
+   '/profile-image',
+   uploadMiddleware.single('image'),
+   ErrorHandler(userController.uploadProfileImage),
+);
 
 module.exports = router;

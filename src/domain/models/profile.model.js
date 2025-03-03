@@ -21,6 +21,13 @@ const profileSchema = new Schema(
          default: '',
          trim: true,
       },
+      profile_img: {
+         type: Object,
+         default: {
+            public_id: '',
+            secure_url: '',
+         },
+      },
       profile_address: {
          type: Schema.Types.ObjectId,
          ref: addressModel,

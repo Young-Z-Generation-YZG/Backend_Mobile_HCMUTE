@@ -11,6 +11,7 @@ const bcrypt = require('bcrypt');
 
 const RedisService = require('../infrastructure/redis');
 const JwtService = require('../infrastructure/auth/jwt.service');
+const UploadService = require('../infrastructure/cloudinary/upload.service');
 
 const userModel = require('../domain/models/user.model');
 const profileModel = require('../domain/models/profile.model');
@@ -363,6 +364,37 @@ class UserService {
          return {
             redirect: encodedUrl,
          };
+      } catch (error) {
+         throw new Error(error);
+      }
+   };
+
+   uploadProfileImage = async (req) => {
+      // Check if file was uploaded
+      if (!req.file) {
+         throw new BadRequestError('No image file provided');
+      }
+
+      try {
+         // Get the authenticated user's ID from the request (set by authenticationMiddleware)
+         const userId = req.user._id; // Assuming your auth middleware sets req.user
+
+         // Find the user and populate the profile
+         const user = await userModel.findById(userId).populate('user_profile');
+
+         const profile = user.user_profile;
+
+         const uploadResult = await UploadService.uploadSingle(req.file);
+
+         // Update profile with new image data
+         profile.profile_img = {
+            public_id: uploadResult.public_id,
+            secure_url: uploadResult.secure_url,
+         };
+
+         const updateStatus = await profile.save();
+
+         return !!updateStatus;
       } catch (error) {
          throw new Error(error);
       }
