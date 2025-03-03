@@ -59,6 +59,7 @@ class CategoryService {
       const currentCategory = await categoryModel.findOne({
          category_slug: slug,
       });
+
       if (!currentCategory) {
          throw new BadRequestError('Category not found');
       }
@@ -112,9 +113,7 @@ class CategoryService {
       });
 
       return {
-         statusCode: 200,
-         message: 'Products retrieved successfully',
-         data: finalData,
+         items: finalData,
          meta: {
             totalItems,
             totalPages,

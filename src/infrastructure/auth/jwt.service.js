@@ -3,18 +3,18 @@
 const jwt = require('jsonwebtoken');
 
 const {
-   jwt: { JWT_SECRET, AT_EXPIRED_IN, RT_EXPIRED_IN },
+   jwt: { JWT_SECRET, JWT_AT_EXPIRED_IN, JWT_RT_EXPIRED_IN },
    mailer: { MAILER_TOKEN_EXPIRED_IN },
 } = require('../configs/env.config');
 
 class JwtService {
    generateTokenPair = (payload) => {
       const accessToken = jwt.sign(payload, JWT_SECRET, {
-         expiresIn: AT_EXPIRED_IN,
+         expiresIn: JWT_AT_EXPIRED_IN,
       });
 
       const refreshToken = jwt.sign(payload, JWT_SECRET, {
-         expiresIn: RT_EXPIRED_IN,
+         expiresIn: JWT_RT_EXPIRED_IN,
       });
 
       return {

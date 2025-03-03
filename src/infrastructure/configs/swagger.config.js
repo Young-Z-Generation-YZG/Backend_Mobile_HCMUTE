@@ -12,7 +12,7 @@ module.exports = options = {
       },
       servers: [
          {
-            url: `http://localhost:${RUNNING_PORT}`,
+            url: `/`,
          },
       ],
       components: {

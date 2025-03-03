@@ -3,7 +3,11 @@ const router = express.Router();
 
 const ErrorHandler = require('../infrastructure/utils/catch-error');
 
+const { authenticationMiddleware } = require('../middlewares/auth.middleware');
+
 const userController = require('../controllers/user.controller');
+
+router.use('/', authenticationMiddleware);
 
 /**
  * @swagger

@@ -1,9 +1,15 @@
 const MongoDatabase = require('../infrastructure/persistence/mongo.db');
 const BadRequestError = require('../domain/core/error.response');
+const {
+   getValuesOfObject,
+} = require('../infrastructure/utils/get-values-object');
 
 const userModel = require('../domain/models/user.model');
 const profileModel = require('../domain/models/profile.model');
 const addressModel = require('../domain/models/address.model');
+const reviewModel = require('../domain/models/review.model');
+const productModel = require('../domain/models/product.model');
+const InvoiceModel = require('../domain/models/invoice.model');
 
 class UserService {
    findOneByEmail = async (email) => {
@@ -13,16 +19,6 @@ class UserService {
          return user;
       } catch (error) {
          throw new error();
-      }
-   };
-
-   getProfile = async (req) => {
-      try {
-         return {
-            test: 'test',
-         };
-      } catch (error) {
-         throw new Error(error);
       }
    };
 
@@ -90,6 +86,145 @@ class UserService {
          return user;
       } catch (err) {
          throw new Error(err);
+      }
+   };
+
+   getProfile = async (req) => {
+      const { email } = req.user;
+
+      const user = await userModel.findOne({ email }).populate({
+         path: 'user_profile',
+         model: 'profile',
+      });
+
+      if (!user) {
+         throw new BadRequestError('User not found');
+      }
+
+      const data = getValuesOfObject({
+         obj: user.user_profile,
+         fields: [
+            'profile_firstName',
+            'profile_lastName',
+            'profile_phoneNumber',
+         ],
+      });
+
+      return {
+         email,
+         ...data,
+      };
+   };
+
+   getAddress = async (req) => {
+      const { email } = req.user;
+
+      const user = await userModel.findOne({ email }).populate({
+         path: 'user_profile',
+         model: 'profile',
+         populate: {
+            path: 'profile_address',
+            model: 'address',
+         },
+      });
+
+      if (!user) {
+         throw new BadRequestError('User not found');
+      }
+
+      const address = user.user_profile.profile_address;
+
+      return getValuesOfObject({
+         obj: address,
+         fields: [
+            'address_addressLine',
+            'address_district',
+            'address_province',
+            'address_country',
+         ],
+      });
+   };
+
+   updateAddresses = async (req) => {
+      const { addressLine, district, province, country } = req.body;
+
+      const { email } = req.user;
+
+      const user = await userModel.findOne({ email }).populate({
+         path: 'user_profile',
+         model: 'profile',
+         populate: {
+            path: 'profile_address',
+            model: 'address',
+         },
+      });
+
+      const newAddress = {
+         address_country: country,
+         address_province: province,
+         address_district: district,
+         address_addressLine: addressLine,
+      };
+
+      const address = user.user_profile.profile_address;
+
+      Object.assign(address, newAddress);
+
+      await address.save();
+
+      return getValuesOfObject({
+         obj: address,
+         fields: [
+            'address_country',
+            'address_province',
+            'address_district',
+            'address_addressLine',
+         ],
+      });
+   };
+
+   updateProfile = async (req) => {
+      const { email } = req.user;
+
+      const { firstName = '', lastName = '', phoneNumber = '' } = req.body;
+
+      const user = await userModel.findOne({ email }).populate({
+         path: 'user_profile',
+         model: 'profile',
+      });
+
+      const newProfile = {
+         profile_firstName: firstName,
+         profile_lastName: lastName,
+         profile_phoneNumber: phoneNumber,
+      };
+
+      const profile = user.user_profile;
+
+      Object.assign(profile, newProfile);
+
+      await profile.save();
+
+      return getValuesOfObject({
+         obj: profile,
+         fields: [
+            'profile_firstName',
+            'profile_lastName',
+            'profile_phoneNumber',
+         ],
+      });
+   };
+
+   findOneAuth = async (email) => {
+      try {
+         const user = await userModel
+            .findOne({ email })
+            .populate('roles')
+            .lean();
+
+         return user;
+      } catch (error) {
+         throw new Error(error);
       }
    };
 }
