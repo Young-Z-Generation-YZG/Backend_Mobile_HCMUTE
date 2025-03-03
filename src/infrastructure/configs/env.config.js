@@ -34,8 +34,8 @@ module.exports = {
    },
    jwt: {
       JWT_SECRET: process.env.JWT_SECRET,
-      AT_EXPIRED_IN: process.env.AT_EXPIRED_IN,
-      RT_EXPIRED_IN: process.env.RT_EXPIRED_IN,
+      JWT_AT_EXPIRED_IN: process.env.JWT_AT_EXPIRED_IN,
+      JWT_RT_EXPIRED_IN: process.env.JWT_RT_EXPIRED_IN,
    },
    mailer: {
       MAILER_SENDER: process.env.MAILER_SENDER,

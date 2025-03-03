@@ -74,9 +74,7 @@ class ProductService {
       });
 
       return {
-         statusCode: 200,
-         message: 'Products retrieved successfully',
-         data: finalData,
+         items: finalData,
          meta: {
             totalItems,
             totalPages,

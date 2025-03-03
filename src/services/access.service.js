@@ -6,10 +6,6 @@ const {
 } = require('../domain/core/error.response');
 
 const {
-   getValuesOfObject,
-} = require('../infrastructure/utils/get-values-object');
-
-const {
    generateEncodedUrl,
 } = require('../infrastructure/utils/generate-encoded-url');
 
@@ -20,9 +16,10 @@ const MailerService = require('../infrastructure/mailer/mailer.service');
 const RedisService = require('../infrastructure/redis');
 
 const userModel = require('../domain/models/user.model');
+const { VERIFY_TYPE } = require('../common/constants');
 
 class AccessService {
-   // [POST] /auth/register
+   // [POST] /auth/register [DONE]
    async register(req) {
       const { firstName = '', lastName = '', email, password } = req.body;
 
@@ -51,27 +48,25 @@ class AccessService {
       // 4. redirect /verify?q=
       const payload = {
          email: email,
-         firstName: firstName,
-         lastName: lastName,
          verified: newUser.verified,
+         verify_type: VERIFY_TYPE.EMAIL,
       };
 
       const jwtMailToken = JwtService.generateJwtMailToken(payload);
 
       const params = {
-         q: jwtMailToken,
-         verify_type: 'email',
+         _q: jwtMailToken,
+         _verify_type: VERIFY_TYPE.EMAIL,
       };
 
       const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
 
-      //5. return page success
       return {
          redirect: encodedUrl,
       };
    }
 
-   // [POST] /auth/login
+   // [POST] /auth/login [DONE]
    async login(req) {
       const { email, password } = req.body;
       // 1. check exist user
@@ -91,12 +86,14 @@ class AccessService {
       if (!existUser.verified) {
          const payload = {
             email: existUser.email,
+            verify_type: VERIFY_TYPE.EMAIL,
          };
 
          const jwtMailToken = JwtService.generateJwtMailToken(payload);
 
          const params = {
-            q: jwtMailToken,
+            _q: jwtMailToken,
+            _verify_type: VERIFY_TYPE.EMAIL,
          };
 
          const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
@@ -120,29 +117,30 @@ class AccessService {
       };
    }
 
-   // [GET] /verify?q=&verify_type=
+   // [GET] /verify?_q=&_verify_type= [DONE]
    async verifyOtpPage(req) {
-      // q is a jwt token
-      const { q, verify_type } = req.query;
+      // _q is a jwt token
+      const { _q, _verify_type } = req.query;
 
-      if (!q) {
+      if (!_q) {
          throw new AuthenticationError('Not permitted to access');
       }
 
-      const decodedToken = JwtService.decode(q);
+      const decodedToken = JwtService.decode(_q);
 
       if (!decodedToken) {
          throw new AuthenticationError('Not permitted to access');
       }
 
-      if (verify_type === 'email') {
-         const { verified } = decodedToken;
+      const { verify_type, able_to_verify } = decodedToken;
 
-         if (verified) {
-            throw new AuthenticationError(
-               'Your are verified or not permitted to access',
-            );
-         }
+      if (_verify_type !== verify_type) {
+         throw new AuthenticationError('Not permitted to access');
+      }
+
+      // Reset password situation
+      if (verify_type === VERIFY_TYPE.RESET_PASSWORD && !able_to_verify) {
+         throw new AuthenticationError('Not permitted to access');
       }
 
       return {
@@ -150,44 +148,81 @@ class AccessService {
       };
    }
 
-   // [GET] /send-mail-token?q=&verify_type=
-   async sendMailToken(req) {
+   // [GET] /send-mail-otp?_q=&_verify_type= [DONE]
+   async sendMailOtp(req) {
       // q is a jwt token
-      const { q, verify_type } = req.query;
+      const { _q, _verify_type } = req.query;
 
-      if (!q) {
+      console.log({ _verify_type });
+
+      if (!_q) {
          throw new AuthenticationError('Not permitted to access');
       }
 
-      if (verify_type !== 'email') {
-         throw new BadRequestError('Invalid verify type');
-      }
+      const decodedToken = JwtService.decode(_q);
 
-      const decodedToken = JwtService.decode(q);
+      console.log({ decodedToken });
 
       if (!decodedToken) {
          throw new AuthenticationError('Not permitted to access');
       }
 
-      const { email, firstName, lastName } = decodedToken;
-      const fullName = `${firstName} ${lastName}`;
+      const { email: emailPayload } = decodedToken;
 
       const mailOtp = OtpService.generateOtp(6);
 
-      await MailerService.sendEmail({
-         to: email,
-         name: fullName,
-         mailOtp: mailOtp,
-      });
+      if (
+         _verify_type === VERIFY_TYPE.EMAIL &&
+         decodedToken.verify_type == _verify_type
+      ) {
+         await MailerService.sendEmailVerify({
+            to: emailPayload,
+            receiverEmail: emailPayload,
+            mailOtp: mailOtp,
+         });
 
-      await RedisService.set(`${email}:otp`, mailOtp);
+         await RedisService.set(
+            `${emailPayload}:${VERIFY_TYPE.EMAIL}`,
+            mailOtp,
+         );
+      } else if (
+         _verify_type === VERIFY_TYPE.CHANGE_PHONE_NUMBER &&
+         decodedToken.verify_type == _verify_type
+      ) {
+         await MailerService.sendEmailChangePhoneNumber({
+            to: emailPayload,
+            receiverEmail: emailPayload,
+            mailOtp: mailOtp,
+         });
+
+         await RedisService.set(
+            `${emailPayload}:${VERIFY_TYPE.CHANGE_PHONE_NUMBER}`,
+            mailOtp,
+         );
+      } else if (
+         _verify_type === VERIFY_TYPE.RESET_PASSWORD &&
+         decodedToken.verify_type == _verify_type
+      ) {
+         await MailerService.sendEmailResetPasswordWithOtp({
+            to: emailPayload,
+            receiverEmail: emailPayload,
+            mailOtp: mailOtp,
+         });
+
+         await RedisService.set(
+            `${emailPayload}:${VERIFY_TYPE.RESET_PASSWORD}`,
+            mailOtp,
+         );
+      } else {
+         throw new BadRequestError('Invalid verify type');
+      }
 
       return {
-         message: `OTP sent to your email: ${email}`,
+         message: `OTP sent to your email: ${emailPayload}`,
       };
    }
 
-   // [POST] /verify-email
+   // [POST] /verify-email [DONE]
    async verifyEmail(req) {
       const { q, otp } = req.body;
 
@@ -202,105 +237,27 @@ class AccessService {
       }
 
       // Compare otp with token in redis
-      const { email } = decodedToken;
+      const { email: emailPayload } = decodedToken;
 
-      const redisMailOtp = await RedisService.get(`${email}:otp`);
+      const redisMailOtp = await RedisService.get(
+         `${emailPayload}:${VERIFY_TYPE.EMAIL}`,
+      );
 
       if (otp != redisMailOtp) {
          throw new BadRequestError('OTP not match');
       }
 
-      const user = await UserService.findOneByEmail(email);
+      const updatedStatus = await UserService.updateVerify(emailPayload);
 
-      await UserService.updateVerify(email);
-
-      const payload = {
-         firstName: user.firstName,
-         lastName: user.lastName,
-         email: user.email,
-      };
-
-      const { accessToken, refreshToken } =
-         JwtService.generateTokenPair(payload);
-
-      return {
-         accessToken,
-         refreshToken,
-      };
+      return updatedStatus;
    }
 
-   // // [POST] /recover-url
-   // async recoverUrl(body) {
-   //    const { email } = body;
+   // [POST] /verify-change-phone-number [DONE]
+   async verifyEmailChangePhoneNumber(req) {
+      const { q, otp } = req.body;
 
-   //    // 1. check exist user
-   //    const existUser = await UserService.findOneByEmail(email);
-
-   //    if (!existUser) {
-   //       throw new BadRequestError('User not found');
-   //    }
-
-   //    // 3. generate tokens
-   //    const payload = {
-   //       email,
-   //    };
-
-   //    const jwtMailToken = JwtService.generateJwtMailToken(payload);
-
-   //    const params = {
-   //       q: jwtMailToken,
-   //    };
-
-   //    const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
-
-   //    MailerService.sendEmailResetPassword({
-   //       to: email,
-   //       resetUrl: encodedUrl,
-   //    });
-
-   //    return {
-   //       redirect: encodedUrl,
-   //    };
-   // }
-
-   // [POST] /recover-otp
-   async recoverOtp(req) {
-      const { email } = req.body;
-
-      // 1. check exist user
-      const existUser = await UserService.findOneByEmail(email);
-
-      if (!existUser) {
-         throw new BadRequestError('User not found');
-      }
-
-      // 3. generate tokens
-      const payload = {
-         email,
-         verify_type: 'resetPassword',
-      };
-
-      const jwtMailToken = JwtService.generateJwtMailToken(payload);
-
-      const params = {
-         q: jwtMailToken,
-         verify_type: 'resetPassword',
-      };
-
-      const encodedUrl = generateEncodedUrl('/reset-password', params);
-
-      return {
-         redirect: encodedUrl,
-      };
-   }
-
-   // [GET] /reset-password?q=&verify_type=
-   async resetPasswordPage(req) {
-      // q is a jwt token
-      const { q, verify_type } = req.query;
-
-      if (!q) {
-         throw new AuthenticationError('Not permitted to access');
+      if (!q && !otp) {
+         throw new BadRequestError('Password not match');
       }
 
       const decodedToken = JwtService.decode(q);
@@ -309,7 +266,84 @@ class AccessService {
          throw new AuthenticationError('Not permitted to access');
       }
 
-      if (decodedToken.verify_type !== verify_type) {
+      // Compare otp with token in redis
+      const { email: emailPayload } = decodedToken;
+
+      const redisMailOtp = await RedisService.get(
+         `${emailPayload}:${VERIFY_TYPE.CHANGE_PHONE_NUMBER}`,
+      );
+
+      const changedPhoneNumber = await RedisService.get(
+         `${emailPayload}:changedPhoneNumber`,
+      );
+
+      console.log({ changedPhoneNumber });
+
+      if (otp != redisMailOtp) {
+         throw new BadRequestError('OTP not match');
+      }
+
+      const updatedStatus = await UserService.updatePhoneNumber({
+         email: emailPayload,
+         changedPhoneNumber: changedPhoneNumber,
+      });
+
+      return updatedStatus;
+   }
+
+   // [POST] /email-reset-password [DONE]
+   async emailResetPassword(req) {
+      const { email } = req.body;
+
+      if (!email) {
+         throw new BadRequestError('Email missing');
+      }
+
+      const user = await UserService.findOneByEmail(email);
+
+      if (!user) {
+         throw new BadRequestError('User not found');
+      }
+
+      const payload = {
+         email: user.email,
+         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         update_field: 'confirmPassword',
+      };
+
+      const jwtMailToken = JwtService.generateJwtMailToken(payload);
+
+      const params = {
+         _q: jwtMailToken,
+         _verify_type: VERIFY_TYPE.RESET_PASSWORD,
+      };
+
+      const encodedUrl = generateEncodedUrl(
+         '/api/v1/auth/reset-password-verify',
+         params,
+      );
+
+      return {
+         redirect: encodedUrl,
+      };
+   }
+
+   // [GET] /reset-password?q=&verify_type= [DONE]
+   async resetPasswordPage(req) {
+      // q is a jwt token
+      const { _q, _verify_type } = req.query;
+
+      if (!_q) {
+         throw new AuthenticationError('Not permitted to access');
+      }
+
+      const decodedToken = JwtService.decode(_q);
+
+      if (!decodedToken) {
+         throw new AuthenticationError('Not permitted to access');
+      }
+
+      if (decodedToken.verify_type !== _verify_type) {
          throw new BadRequestError('Invalid verify type');
       }
 
@@ -318,16 +352,16 @@ class AccessService {
       };
    }
 
-   // [POST] /reset-password?q=
-   async resetPassword(req) {
-      const { q } = req.query;
+   // [POST] /reset-new-password?_q=
+   async resetNewPassword(req) {
+      const { _q } = req.query;
       const { password, confirmPassword } = req.body;
 
-      if (!q) {
+      if (!_q) {
          throw new BadRequestError('Token missing');
       }
 
-      const decodedToken = JwtService.decode(q);
+      const decodedToken = JwtService.decode(_q);
 
       if (!decodedToken) {
          throw new AuthenticationError('Token invalid');
@@ -337,38 +371,35 @@ class AccessService {
          throw new BadRequestError('Password not match');
       }
 
-      const { email } = decodedToken;
+      const { email: emailPayload, update_field } = decodedToken;
 
-      const existUser = await UserService.findOneByEmail(email);
+      await RedisService.set(
+         `${emailPayload}:${update_field}`,
+         confirmPassword,
+      );
 
-      if (!existUser) {
-         throw new BadRequestError('User not found');
-      }
-
-      const resetPasswordOtp = OtpService.generateOtp(6);
-
-      MailerService.sendEmailResetPasswordWithOtp({
-         to: email,
-         name: email,
-         resetPasswordOtp: resetPasswordOtp,
-      });
-
-      await RedisService.set(`${email}:resetPasswordOtp`, resetPasswordOtp);
-      await RedisService.set(`${email}:confirmPassword`, confirmPassword);
-
-      const params = {
-         q: q,
-         verify_type: 'resetPassword',
+      const payload = {
+         email: emailPayload,
+         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         update_field: update_field,
+         able_to_verify: true,
       };
 
-      const encodedUrl = generateEncodedUrl('/verify-otp', params);
+      const newJwtMail = JwtService.generateJwtMailToken(payload);
+
+      const params = {
+         _q: newJwtMail,
+         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+      };
+
+      const encodedUrl = generateEncodedUrl('api/v1/auth/otp-verify', params);
 
       return {
          redirect: encodedUrl,
       };
    }
 
-   async verifyResetPasswordOtp(req) {
+   async verifyResetPassword(req) {
       const { q, otp } = req.body;
 
       if (!q && !otp) {
@@ -381,26 +412,27 @@ class AccessService {
          throw new AuthenticationError('Token invalid');
       }
 
-      const { email } = decodedToken;
+      const { email, update_field } = decodedToken;
 
-      const resetPasswordOtp = await RedisService.get(
-         `${email}:resetPasswordOtp`,
+      const redisOtp = await RedisService.get(
+         `${email}:${VERIFY_TYPE.RESET_PASSWORD}`,
       );
       const confirmPassword = await RedisService.get(
-         `${email}:confirmPassword`,
+         `${email}:${update_field}`,
       );
 
-      if (otp !== resetPasswordOtp) {
+      if (otp !== redisOtp) {
          throw new BadRequestError('OTP not match');
       }
 
       const hashPassword = await bcrypt.hash(confirmPassword, 10);
 
-      await UserService.updatePassword(email, hashPassword);
+      const updateResult = await UserService.updatePassword(
+         email,
+         hashPassword,
+      );
 
-      return {
-         message: 'Reset password success',
-      };
+      return !!updateResult;
    }
 }
 

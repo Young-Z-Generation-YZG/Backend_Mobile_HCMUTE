@@ -28,15 +28,19 @@ const handlebarOptions = {
 // use a template file with nodemailer
 transporter.use('compile', hbs(handlebarOptions));
 
-const sendEmail = async ({ to = '', name = '', mailOtp }) => {
+const sendEmailVerify = async ({
+   to = '',
+   receiverEmail = '',
+   mailOtp = '',
+}) => {
    var options = {
       from: MAILER_SENDER,
       to,
       subject: '[VERIFY] Clothing store notification',
-      text: `Hii ${name} !`,
+      text: `Hii ${receiverEmail} !`,
       template: 'receiver',
       context: {
-         name,
+         name: receiverEmail,
          website: 'null',
          mailOtp: mailOtp,
       },
@@ -91,18 +95,48 @@ const sendEmailResetPassword = async ({
 
 const sendEmailResetPasswordWithOtp = async ({
    to = '',
-   email = '',
-   resetPasswordOtp = '',
+   receiverEmail = '',
+   mailOtp = '',
 }) => {
    var options = {
       from: MAILER_SENDER,
       to,
       subject: '[RESET_PASSWORD] Clothing store notification',
-      text: `Hii ${email} !`,
+      text: `Hii ${receiverEmail} !`,
       template: 'forget-password',
       context: {
-         name: email,
-         resetPasswordOtp: resetPasswordOtp,
+         name: receiverEmail,
+         mailOtp: mailOtp,
+      },
+   };
+
+   try {
+      transporter.sendMail(options, function (error, info) {
+         if (error) {
+            console.log(error);
+         } else {
+            console.log('Email sent: ' + info.response);
+         }
+      });
+   } catch (error) {
+      throw new Error(error);
+   }
+};
+
+const sendEmailChangePhoneNumber = async ({
+   to = '',
+   receiverEmail = '',
+   mailOtp = '',
+}) => {
+   var options = {
+      from: MAILER_SENDER,
+      to,
+      subject: '[CHANGE_PHONE_NUMBER] Clothing store notification',
+      text: `Hii ${receiverEmail} !`,
+      template: 'change-phone-number',
+      context: {
+         name: receiverEmail,
+         mailOtp: mailOtp,
       },
    };
 
@@ -120,7 +154,8 @@ const sendEmailResetPasswordWithOtp = async ({
 };
 
 module.exports = {
-   sendEmail,
+   sendEmailVerify,
    sendEmailResetPassword,
    sendEmailResetPasswordWithOtp,
+   sendEmailChangePhoneNumber,
 };

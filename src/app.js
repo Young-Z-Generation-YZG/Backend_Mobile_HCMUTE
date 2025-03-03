@@ -2,6 +2,7 @@
 const cors = require('cors');
 const express = require('express');
 const path = require('path');
+const passport = require('passport');
 
 // configs
 const MongoDatabase = require('./infrastructure/persistence/mongo.db');
@@ -36,6 +37,10 @@ app.use(express.static(assetPath));
 
 // Register middlewares
 registerMiddlewares(app);
+
+// Register passport jwt strategy middleware
+require('./infrastructure/auth/passport-jwt')(passport);
+app.use(passport.initialize());
 
 // Connect to database
 MongoDatabase.connect();
