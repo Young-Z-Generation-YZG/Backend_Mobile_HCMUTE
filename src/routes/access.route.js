@@ -200,6 +200,7 @@ router.post(
  * @swagger
  * /api/v1/auth/email-reset-password:
  *  post:
+ *   summary: Send email to reset password [Forget Password]
  *   tags: [Auth]
  *   requestBody:
  *    required: true

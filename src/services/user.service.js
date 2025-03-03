@@ -354,7 +354,10 @@ class UserService {
             _verify_type: VERIFY_TYPE.CHANGE_PHONE_NUMBER,
          };
 
-         const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
+         const encodedUrl = generateEncodedUrl(
+            '/api/v1/auth/otp-verify',
+            params,
+         );
 
          await RedisService.set(
             `${emailPayload}:changedPhoneNumber`,
@@ -369,6 +372,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    uploadProfileImage = async (req) => {
       // Check if file was uploaded
       if (!req.file) {
