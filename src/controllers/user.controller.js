@@ -58,6 +58,14 @@ class UserController {
          data: await UserService.changePhoneNumber(req),
       }).send(res);
    }
+
+   async uploadProfileImage(req, res) {
+      new CREATED({
+         message: 'OK',
+         statusCode: 200,
+         data: await UserService.uploadProfileImage(req),
+      }).send(res);
+   }
 }
 
 module.exports = new UserController();
