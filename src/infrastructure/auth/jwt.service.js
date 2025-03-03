@@ -24,8 +24,6 @@ class JwtService {
    };
 
    generateJwtMailToken = (payload) => {
-      console.log('payload', payload);
-
       const mailToken = jwt.sign(payload, JWT_SECRET, {
          expiresIn: MAILER_TOKEN_EXPIRED_IN,
       });

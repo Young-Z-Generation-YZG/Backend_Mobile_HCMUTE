@@ -136,4 +136,29 @@ router.put('/addresses', ErrorHandler(userController.updateAddresses));
  */
 router.patch('/password', ErrorHandler(userController.changeCurrentPassword));
 
+/**
+ * @swagger
+ * /api/v1/users/phone-number:
+ *  patch:
+ *   tags: [User]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         changedPhoneNumber:
+ *          type: string
+ *          example: "0888283890"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.patch('/phone-number', ErrorHandler(userController.changePhoneNumber));
+
 module.exports = router;

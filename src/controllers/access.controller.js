@@ -35,11 +35,11 @@ class AccessController {
       }).send(res);
    }
 
-   async sendMailToken(req, res) {
+   async sendMailOtp(req, res) {
       new OK({
          message: 'OK',
          statusCode: 200,
-         data: await AccessService.sendMailToken(req),
+         data: await AccessService.sendMailOtp(req),
       }).send(res);
    }
 
@@ -51,35 +51,35 @@ class AccessController {
       }).send(res);
    }
 
-   // async recoverUrl(req, res) {
-   //    return new OK({
-   //       message: 'OK',
-   //       statusCode: 200,
-   //       data: await AccessService.recoverUrl(req),
-   //    }).send(res);
-   // }
-
-   async recoverOtp(req, res) {
+   async verifyEmailChangePhoneNumber(req, res) {
       return new OK({
          message: 'OK',
          statusCode: 200,
-         data: await AccessService.recoverOtp(req),
+         data: await AccessService.verifyEmailChangePhoneNumber(req),
       }).send(res);
    }
 
-   async resetPassword(req, res) {
+   async emailResetPassword(req, res) {
       return new OK({
          message: 'OK',
          statusCode: 200,
-         data: await AccessService.resetPassword(req),
+         data: await AccessService.emailResetPassword(req),
       }).send(res);
    }
 
-   async verifyResetPasswordOtp(req, res) {
+   async resetNewPassword(req, res) {
       return new OK({
          message: 'OK',
          statusCode: 200,
-         data: await AccessService.verifyResetPasswordOtp(req),
+         data: await AccessService.resetNewPassword(req),
+      }).send(res);
+   }
+
+   async verifyResetPassword(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.verifyResetPassword(req),
       }).send(res);
    }
 }

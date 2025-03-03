@@ -3,6 +3,14 @@ const BadRequestError = require('../domain/core/error.response');
 const {
    getValuesOfObject,
 } = require('../infrastructure/utils/get-values-object');
+const { generateOtp } = require('../infrastructure/utils/otp.service');
+const {
+   generateEncodedUrl,
+} = require('../infrastructure/utils/generate-encoded-url');
+const bcrypt = require('bcrypt');
+
+const RedisService = require('../infrastructure/redis');
+const JwtService = require('../infrastructure/auth/jwt.service');
 
 const userModel = require('../domain/models/user.model');
 const profileModel = require('../domain/models/profile.model');
@@ -10,8 +18,10 @@ const addressModel = require('../domain/models/address.model');
 const reviewModel = require('../domain/models/review.model');
 const productModel = require('../domain/models/product.model');
 const InvoiceModel = require('../domain/models/invoice.model');
+const { VERIFY_TYPE } = require('../common/constants');
 
 class UserService {
+   // [DONE]
    findOneByEmail = async (email) => {
       try {
          const user = await userModel.findOne({ email }).lean().exec();
@@ -22,6 +32,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    createUser = async ({ firstName = '', lastName = '', email, password }) => {
       const mongo = MongoDatabase.getInstance();
       let session = await mongo.startSession();
@@ -55,6 +66,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    updateVerify = async (email) => {
       try {
          const user = await userModel.findOneAndUpdate(
@@ -66,12 +78,13 @@ class UserService {
             },
          );
 
-         return user;
+         return !!user;
       } catch (err) {
          throw new Error(err);
       }
    };
 
+   // [DONE]
    updatePassword = async (email, password) => {
       try {
          const user = await userModel.findOneAndUpdate(
@@ -89,6 +102,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    changeCurrentPassword = async (req) => {
       const { currentPassword, newPassword, confirmPassword } = req.body;
 
@@ -99,7 +113,7 @@ class UserService {
       }
 
       try {
-         const user = await findOneByEmail(email);
+         const user = await this.findOneByEmail(email);
 
          if (!user) {
             throw new BadRequestError('User not found');
@@ -127,6 +141,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    getProfile = async (req) => {
       const { email } = req.user;
 
@@ -154,6 +169,7 @@ class UserService {
       };
    };
 
+   // [DONE]
    getAddress = async (req) => {
       const { email } = req.user;
 
@@ -183,6 +199,7 @@ class UserService {
       });
    };
 
+   // [DONE]
    updateAddresses = async (req) => {
       const { addressLine, district, province, country } = req.body;
 
@@ -227,6 +244,7 @@ class UserService {
       }
    };
 
+   // [DONE]
    updateProfile = async (req) => {
       const { email } = req.user;
 
@@ -265,6 +283,37 @@ class UserService {
       }
    };
 
+   // [DONE]
+   updatePhoneNumber = async ({ email, changedPhoneNumber }) => {
+      console.log({
+         email,
+         changedPhoneNumber,
+      });
+
+      // if (!email || !changedPhoneNumber) {
+      //    throw new BadRequestError('Password not match');
+      // }
+
+      try {
+         const user = await userModel.findOne({ email }).select('user_profile');
+         if (!user || !user.user_profile) {
+            throw new BadRequestError('User or profile not found');
+         }
+
+         const updatedProfile = await profileModel.findOneAndUpdate(
+            { _id: user.user_profile },
+            { profile_phoneNumber: changedPhoneNumber },
+         );
+
+         return !!updatedProfile;
+      } catch (error) {
+         throw error instanceof BadRequestError
+            ? error
+            : new Error(`Failed to update phone number: ${error.message}`);
+      }
+   };
+
+   // [DONE]
    findOneAuth = async (email) => {
       try {
          const user = await userModel
@@ -273,6 +322,47 @@ class UserService {
             .lean();
 
          return user;
+      } catch (error) {
+         throw new Error(error);
+      }
+   };
+
+   // [DONE]
+   changePhoneNumber = async (req) => {
+      const { changedPhoneNumber } = req.body;
+
+      const { email: emailPayload } = req.user;
+
+      try {
+         const user = await userModel
+            .findOne({ email: emailPayload })
+            .populate({
+               path: 'user_profile',
+               model: 'profile',
+            });
+
+         const jwtPayload = {
+            email: user.email,
+            verify_type: VERIFY_TYPE.CHANGE_PHONE_NUMBER,
+         };
+
+         const q = JwtService.generateJwtMailToken(jwtPayload);
+
+         const params = {
+            _q: q,
+            _verify_type: VERIFY_TYPE.CHANGE_PHONE_NUMBER,
+         };
+
+         const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
+
+         await RedisService.set(
+            `${emailPayload}:changedPhoneNumber`,
+            changedPhoneNumber,
+         );
+
+         return {
+            redirect: encodedUrl,
+         };
       } catch (error) {
          throw new Error(error);
       }

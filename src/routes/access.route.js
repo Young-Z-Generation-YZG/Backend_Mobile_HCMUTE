@@ -12,6 +12,7 @@ const AccessController = require('../controllers/access.controller.js');
  *  description: authentication and authorization
  */
 
+// [DONE]
 /**
  * @swagger
  * /api/v1/auth/register:
@@ -46,6 +47,7 @@ const AccessController = require('../controllers/access.controller.js');
  */
 router.post('/register', ErrorHandler(AccessController.register));
 
+// [DONE]
 /**
  * @swagger
  * /api/v1/auth/login:
@@ -74,24 +76,27 @@ router.post('/register', ErrorHandler(AccessController.register));
  */
 router.post('/login', ErrorHandler(AccessController.login));
 
+// [DONE]
 /**
  * @swagger
  * /api/v1/auth/otp-verify:
  *   get:
+ *     summary: centralized verify otp page [Page]
  *     tags: [Auth]
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: _q
  *         schema:
  *           type: string
  *         required: true
- *         description: q is jwt token.
+ *         description: _q is jwt token.
  *       - in: query
- *         name: verify_type
+ *         name: _verify_type
  *         schema:
  *           type: string
+ *           enum: [email, resetPassword, changeEmail, changePhoneNumber]
+ *         default: email
  *         required: true
- *         description: verify_type ["email", "resetPassword"].
  *     responses:
  *       '200':
  *         description: OK
@@ -102,24 +107,27 @@ router.post('/login', ErrorHandler(AccessController.login));
  */
 router.get('/otp-verify', ErrorHandler(AccessController.verifyOtpPage));
 
+// [DONE]
 /**
  * @swagger
- * /api/v1/auth/send-mail-token:
+ * /api/v1/auth/send-mail-otp:
  *   get:
+ *     summary: centralized to send mail otp
  *     tags: [Auth]
  *     parameters:
  *       - in: query
- *         name: q
+ *         name: _q
  *         schema:
  *           type: string
  *         required: true
  *         description: q is jwt mail token.
  *       - in: query
- *         name: verify_type
+ *         name: _verify_type
  *         schema:
  *           type: string
+ *           enum: [email, resetPassword, changeEmail, changePhoneNumber]
+ *         default: email
  *         required: true
- *         description: verify_type ["email", "resetPassword"].
  *     responses:
  *       '200':
  *         description: OK
@@ -128,8 +136,9 @@ router.get('/otp-verify', ErrorHandler(AccessController.verifyOtpPage));
  *             schema:
  *               type: object
  */
-router.get('/send-mail-token', ErrorHandler(AccessController.sendMailToken));
+router.get('/send-mail-otp', ErrorHandler(AccessController.sendMailOtp));
 
+// [DONE]
 /**
  * @swagger
  * /api/v1/auth/verify-email:
@@ -156,101 +165,10 @@ router.get('/send-mail-token', ErrorHandler(AccessController.sendMailToken));
  */
 router.post('/verify-email', ErrorHandler(AccessController.verifyEmail));
 
+// [DONE]
 /**
  * @swagger
- * /api/v1/auth/otp-recover:
- *  post:
- *   tags: [Auth]
- *   requestBody:
- *    required: true
- *    content:
- *     application/json:
- *      schema:
- *        type: object
- *        properties:
- *         email:
- *          type: string
- *   responses:
- *    '200':
- *      description: OK
- *      content:
- *       application/json:
- *        schema:
- *         type: object
- */
-router.post('/otp-recover', ErrorHandler(AccessController.recoverOtp));
-
-/**
- * @swagger
- * /api/v1/auth/otp-reset-password:
- *   get:
- *     tags: [Auth]
- *     parameters:
- *       - in: query
- *         name: q
- *         schema:
- *           type: string
- *         required: true
- *         description: q is jwt for reset password.
- *       - in: query
- *         name: verify_type
- *         schema:
- *           type: string
- *         required: true
- *         description: verify_type ["email", "resetPassword"].
- *     responses:
- *       '200':
- *         description: OK
- *         content:
- *           application/json:
- *             schema:
- *               type: object
- */
-router.get(
-   '/otp-reset-password',
-   ErrorHandler(AccessController.resetPasswordPage),
-);
-
-/**
- * @swagger
- * /api/v1/auth/otp-reset-password:
- *   post:
- *    tags: [Auth]
- *    parameters:
- *      - in: query
- *        name: q
- *        schema:
- *          type: string
- *        required: true
- *        description: q is jwt token.
- *    requestBody:
- *     required: true
- *     content:
- *      application/json:
- *       schema:
- *        type: object
- *        properties:
- *         password:
- *          type: string
- *         confirmPassword:
- *          type: string
- *    responses:
- *     '200':
- *      description: OK
- *      content:
- *       application/json:
- *        schema:
- *         type: object
- *         properties:
- */
-router.post(
-   '/otp-reset-password',
-   ErrorHandler(AccessController.resetPassword),
-);
-
-/**
- * @swagger
- * /api/v1/auth/otp-verify-reset-password:
+ * /api/v1/auth/verify-change-phone-number:
  *  post:
  *   tags: [Auth]
  *   requestBody:
@@ -273,8 +191,137 @@ router.post(
  *         type: object
  */
 router.post(
-   '/otp-verify-reset-password',
-   ErrorHandler(AccessController.verifyResetPasswordOtp),
+   '/verify-change-phone-number',
+   ErrorHandler(AccessController.verifyEmailChangePhoneNumber),
+);
+
+// [DONE]
+/**
+ * @swagger
+ * /api/v1/auth/email-reset-password:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         email:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post(
+   '/email-reset-password',
+   ErrorHandler(AccessController.emailResetPassword),
+);
+
+// [DONE]
+/**
+ * @swagger
+ * /api/v1/auth/reset-password-verify:
+ *   get:
+ *     summary: reset password page [Page]
+ *     tags: [Auth]
+ *     parameters:
+ *       - in: query
+ *         name: _q
+ *         schema:
+ *           type: string
+ *         required: true
+ *         description: _q is jwt token.
+ *       - in: query
+ *         name: _verify_type
+ *         schema:
+ *           type: string
+ *           enum: [resetPassword]
+ *         required: true
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+   '/reset-password-verify',
+   ErrorHandler(AccessController.resetPasswordPage),
+);
+
+// [DONE]
+/**
+ * @swagger
+ * /api/v1/auth/reset-new-password:
+ *   post:
+ *    tags: [Auth]
+ *    parameters:
+ *      - in: query
+ *        name: _q
+ *        schema:
+ *          type: string
+ *        required: true
+ *        description: _q is jwt token.
+ *    requestBody:
+ *     required: true
+ *     content:
+ *      application/json:
+ *       schema:
+ *        type: object
+ *        properties:
+ *         password:
+ *          type: string
+ *         confirmPassword:
+ *          type: string
+ *    responses:
+ *     '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *         properties:
+ */
+router.post(
+   '/reset-new-password',
+   ErrorHandler(AccessController.resetNewPassword),
+);
+
+// [DONE]
+/**
+ * @swagger
+ * /api/v1/auth/verify-reset-password:
+ *  post:
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         q:
+ *          type: string
+ *         otp:
+ *          type: string
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.post(
+   '/verify-reset-password',
+   ErrorHandler(AccessController.verifyResetPassword),
 );
 
 module.exports = router;
