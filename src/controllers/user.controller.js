@@ -34,6 +34,14 @@ class UserController {
          data: await UserService.updateProfile(req),
       }).send(res);
    }
+
+   async changeCurrentPassword(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await UserService.changeCurrentPassword(req),
+      }).send(res);
+   }
 }
 
 module.exports = new UserController();

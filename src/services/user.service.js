@@ -89,6 +89,44 @@ class UserService {
       }
    };
 
+   changeCurrentPassword = async (req) => {
+      const { currentPassword, newPassword, confirmPassword } = req.body;
+
+      const { email } = req.user;
+
+      if (newPassword !== confirmPassword) {
+         throw new BadRequestError('Password not match');
+      }
+
+      try {
+         const user = await findOneByEmail(email);
+
+         if (!user) {
+            throw new BadRequestError('User not found');
+         }
+
+         // compare password
+         if (!(await bcrypt.compare(currentPassword, user.password))) {
+            throw new BadRequestError('Password not match');
+         }
+
+         const hashPassword = await bcrypt.hash(confirmPassword, 10);
+
+         const updatedUser = await userModel.findOneAndUpdate(
+            {
+               email: email,
+            },
+            {
+               password: hashPassword,
+            },
+         );
+
+         return !!updatedUser;
+      } catch (error) {
+         throw new Error(error);
+      }
+   };
+
    getProfile = async (req) => {
       const { email } = req.user;
 
@@ -150,37 +188,43 @@ class UserService {
 
       const { email } = req.user;
 
-      const user = await userModel.findOne({ email }).populate({
-         path: 'user_profile',
-         model: 'profile',
-         populate: {
-            path: 'profile_address',
-            model: 'address',
-         },
-      });
+      try {
+         const user = await userModel.findOne({ email }).populate({
+            path: 'user_profile',
+            model: 'profile',
+            populate: {
+               path: 'profile_address',
+               model: 'address',
+            },
+         });
 
-      const newAddress = {
-         address_country: country,
-         address_province: province,
-         address_district: district,
-         address_addressLine: addressLine,
-      };
+         const newAddress = {
+            address_country: country,
+            address_province: province,
+            address_district: district,
+            address_addressLine: addressLine,
+         };
 
-      const address = user.user_profile.profile_address;
+         const address = user.user_profile.profile_address;
 
-      Object.assign(address, newAddress);
+         Object.assign(address, newAddress);
 
-      await address.save();
+         const updatedAddress = await address.save();
 
-      return getValuesOfObject({
-         obj: address,
-         fields: [
-            'address_country',
-            'address_province',
-            'address_district',
-            'address_addressLine',
-         ],
-      });
+         // return getValuesOfObject({
+         //    obj: address,
+         //    fields: [
+         //       'address_country',
+         //       'address_province',
+         //       'address_district',
+         //       'address_addressLine',
+         //    ],
+         // });
+
+         return !!updatedAddress;
+      } catch (error) {
+         throw new Error(error);
+      }
    };
 
    updateProfile = async (req) => {
@@ -188,31 +232,37 @@ class UserService {
 
       const { firstName = '', lastName = '', phoneNumber = '' } = req.body;
 
-      const user = await userModel.findOne({ email }).populate({
-         path: 'user_profile',
-         model: 'profile',
-      });
+      try {
+         const user = await userModel.findOne({ email }).populate({
+            path: 'user_profile',
+            model: 'profile',
+         });
 
-      const newProfile = {
-         profile_firstName: firstName,
-         profile_lastName: lastName,
-         profile_phoneNumber: phoneNumber,
-      };
+         const newProfile = {
+            profile_firstName: firstName,
+            profile_lastName: lastName,
+            profile_phoneNumber: phoneNumber,
+         };
 
-      const profile = user.user_profile;
+         const profile = user.user_profile;
 
-      Object.assign(profile, newProfile);
+         Object.assign(profile, newProfile);
 
-      await profile.save();
+         const updatedProfile = await profile.save();
 
-      return getValuesOfObject({
-         obj: profile,
-         fields: [
-            'profile_firstName',
-            'profile_lastName',
-            'profile_phoneNumber',
-         ],
-      });
+         // return getValuesOfObject({
+         //    obj: profile,
+         //    fields: [
+         //       'profile_firstName',
+         //       'profile_lastName',
+         //       'profile_phoneNumber',
+         //    ],
+         // });
+
+         return !!updatedProfile;
+      } catch (error) {
+         throw new Error(error);
+      }
    };
 
    findOneAuth = async (email) => {

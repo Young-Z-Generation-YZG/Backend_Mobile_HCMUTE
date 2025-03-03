@@ -26,12 +26,16 @@ const AccessController = require('../controllers/access.controller.js');
  *        properties:
  *         firstName:
  *          type: string
+ *          example: "Foo"
  *         lastName:
  *          type: string
+ *          example: "Bar"
  *         email:
  *          type: string
+ *          example: "foo@gmail.com"
  *         password:
  *          type: string
+ *          example: "bar"
  *   responses:
  *    '200':
  *      description: OK
@@ -56,8 +60,10 @@ router.post('/register', ErrorHandler(AccessController.register));
  *        properties:
  *         email:
  *          type: string
+ *          example: "foo@gmail.com"
  *         password:
  *          type: string
+ *          example: "bar"
  *   responses:
  *    '200':
  *      description: OK
