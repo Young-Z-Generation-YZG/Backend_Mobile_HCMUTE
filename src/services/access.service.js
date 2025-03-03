@@ -59,7 +59,7 @@ class AccessService {
          _verify_type: VERIFY_TYPE.EMAIL,
       };
 
-      const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
+      const encodedUrl = generateEncodedUrl('/api/v1/auth/otp-verify', params);
 
       return {
          redirect: encodedUrl,
@@ -96,7 +96,10 @@ class AccessService {
             _verify_type: VERIFY_TYPE.EMAIL,
          };
 
-         const encodedUrl = generateEncodedUrl('/api/v1/auth/verify', params);
+         const encodedUrl = generateEncodedUrl(
+            '/api/v1/auth/otp-verify',
+            params,
+         );
 
          return {
             redirect: encodedUrl,
