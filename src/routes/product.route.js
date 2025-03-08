@@ -4,7 +4,7 @@ const express = require('express');
 const router = express.Router();
 
 const ErrorHandler = require('../infrastructure/utils/catch-error.js');
-const productController = require('../controllers/product.controller');
+const ProductController = require('../controllers/product.controller');
 
 /**
  * @swagger
@@ -154,7 +154,29 @@ const productController = require('../controllers/product.controller');
  *       '400':
  *         description: Bad Request - Invalid query parameters
  */
-router.get('/', ErrorHandler(productController.getAll));
+router.get('/', ErrorHandler(ProductController.getAll));
+
+/**
+ * @swagger
+ * /api/v1/products/{slug}:
+ *   get:
+ *     tags: [Products]
+ *     parameters:
+ *       - name: slug
+ *         in: path
+ *         required: true
+ *         description: The slug of the product
+ *         schema:
+ *           type: string
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/:slug', ErrorHandler(ProductController.getBySlug));
 
 /**
  * @swagger
@@ -180,6 +202,6 @@ router.get('/', ErrorHandler(productController.getAll));
  *               items:
  *                 type: object
  */
-router.get('/best-sellers', ErrorHandler(productController.getBestSellers));
+router.get('/best-sellers', ErrorHandler(ProductController.getBestSellers));
 
 module.exports = router;

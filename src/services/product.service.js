@@ -5,6 +5,7 @@ const {
    minimumCloudinaryImg,
 } = require('../infrastructure/utils/minimum-cloudinary-img');
 const { BadRequestError } = require('../domain/core/error.response'); // Assuming you have this
+const InventoryService = require('../services/inventory.service');
 
 class ProductService {
    // [GET] /api/v1/products
@@ -164,6 +165,53 @@ class ProductService {
          console.error('Error fetching products:', error);
          throw new BadRequestError(error.message || 'Error fetching products');
       }
+   };
+
+   // [GET] /api/v1/products/:slug
+   getBySlug = async (req) => {
+      const { slug } = req.params;
+
+      let product = await productModel
+         .findOne({ product_slug: slug })
+         .populate('product_category')
+         .populate({
+            path: 'product_promotion.promotion_id',
+            model: 'Promotion',
+            match: {
+               start_date: { $lte: new Date() },
+               end_date: { $gt: new Date() },
+            },
+         });
+
+      if (!product) {
+         throw new NotFoundError('Product not found');
+      }
+
+      const filtersInventory = {
+         'sku.sku_size': 1,
+         'sku.sku_color': 1,
+         'sku.sku_quantity': 1,
+         _id: 0,
+      };
+
+      const productInventory = await InventoryService.getByProductId(
+         product._id,
+         filtersInventory,
+      );
+
+      const flat = productInventory.map((item) => {
+         var { sku } = item.toObject();
+         return {
+            ...sku,
+         };
+      });
+
+      const result = {
+         ...product.toObject(),
+         skus: [...flat],
+      };
+
+      return result;
    };
 
    // [GET] /api/v1/products/best-sellers (unchanged)
