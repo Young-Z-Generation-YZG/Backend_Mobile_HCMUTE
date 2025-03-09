@@ -10,6 +10,14 @@ class ProductController {
       }).send(res);
    }
 
+   async getBySlug(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await productService.getBySlug(req),
+      }).send(res);
+   }
+
    async getBestSellers(req, res) {
       new OK({
          message: 'OK',

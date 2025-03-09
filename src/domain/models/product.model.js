@@ -100,27 +100,41 @@ const productSchema = new Schema(
    },
 );
 
-// Add virtual fields for discount calculation
-productSchema.virtual('current_discount').get(function () {
-   if (!this.product_promotion) return 0;
+// // Add index for searching
+productSchema.index(
+   {
+      product_name: 'text',
+      product_description: 'text',
+   },
+   {
+      weights: {
+         product_name: 10,
+         product_description: 1,
+      },
+   },
+);
 
-   const now = new Date();
-   if (
-      this.product_promotion.start_date <= now &&
-      this.product_promotion.end_date > now
-   ) {
-      return this.product_promotion.current_discount;
-   }
-   return 0;
-});
+// // Add virtual fields for discount calculation
+// productSchema.virtual('current_discount').get(function () {
+//    if (!this.product_promotion) return 0;
 
-productSchema.virtual('final_price').get(function () {
-   const discount = this.current_discount || 0;
-   return Math.ceil(this.product_price * (1 - discount / 100));
-});
+//    const now = new Date();
+//    if (
+//       this.product_promotion.start_date <= now &&
+//       this.product_promotion.end_date > now
+//    ) {
+//       return this.product_promotion.current_discount;
+//    }
+//    return 0;
+// });
 
-// Ensure virtual fields are included
-productSchema.set('toJSON', { virtuals: true });
-productSchema.set('toObject', { virtuals: true });
+// productSchema.virtual('final_price').get(function () {
+//    const discount = this.current_discount || 0;
+//    return Math.ceil(this.product_price * (1 - discount / 100));
+// });
+
+// // Ensure virtual fields are included
+// productSchema.set('toJSON', { virtuals: true });
+// productSchema.set('toObject', { virtuals: true });
 
 module.exports = model(DOCUMENT_NAME, productSchema);

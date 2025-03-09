@@ -249,7 +249,7 @@ class UserService {
    updateProfile = async (req) => {
       const { email } = req.user;
 
-      const { firstName = '', lastName = '', phoneNumber = '' } = req.body;
+      const { firstName = '', lastName = '' } = req.body;
 
       try {
          const user = await userModel.findOne({ email }).populate({
@@ -260,7 +260,6 @@ class UserService {
          const newProfile = {
             profile_firstName: firstName,
             profile_lastName: lastName,
-            profile_phoneNumber: phoneNumber,
          };
 
          const profile = user.user_profile;
