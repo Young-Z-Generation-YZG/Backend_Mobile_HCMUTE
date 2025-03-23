@@ -1,11 +1,18 @@
 const { model, Schema } = require('mongoose');
 const userModel = require('./user.model');
+const {
+   INVOICE_STATUS,
+   INVOICE_STATUS_ARRAY,
+   COLORS_ARRAY,
+   SIZES_ARRAY,
+   PAYMENT_METHODS_ARRAY,
+} = require('../../common/constants/domain');
 
 const COLLECTION_NAME = 'Invoices';
 const DOCUMENT_NAME = 'invoice';
 
 const productInvoiceSchema = new Schema({
-   _id: {
+   product_id: {
       type: Schema.Types.ObjectId,
       ref: 'Products',
       required: true,
@@ -15,40 +22,32 @@ const productInvoiceSchema = new Schema({
       type: String,
       required: true,
    },
-   product_description: {
-      type: String,
-      required: true,
-   },
    product_size: {
-      type: [String],
-      enum: ['S', 'M', 'L', 'XL', '2XL'],
+      type: String,
+      enum: SIZES_ARRAY,
       required: true,
    },
    product_color: {
-      type: [String],
-      enum: ['Yellow', 'Red', 'Brown', 'Gray', 'Pink', 'White'],
+      type: String,
+      enum: COLORS_ARRAY,
       required: true,
    },
-   product_quantity: {
-      type: Number,
+   product_image: {
+      type: String,
       required: true,
    },
    product_price: {
-      type: String,
+      type: Number,
       required: true,
       trim: true,
    },
-   product_final_price: {
-      type: String,
+   quantity: {
+      type: Number,
       required: true,
-      trim: true,
-   },
-   product_discount: {
-      type: String,
-      required: true,
-      trim: true,
    },
 });
+
+productInvoiceSchema.remove('_id');
 
 const invoiceSchema = new Schema(
    {
@@ -56,6 +55,16 @@ const invoiceSchema = new Schema(
          type: Schema.Types.ObjectId,
          ref: userModel,
          required: true,
+      },
+      contact_name: {
+         type: String,
+         required: true,
+         trim: true,
+      },
+      contact_phone_number: {
+         type: String,
+         required: true,
+         trim: true,
       },
       invoice_products: {
          type: [productInvoiceSchema],
@@ -66,10 +75,35 @@ const invoiceSchema = new Schema(
          default: '',
          trim: true,
       },
+      shipping_address_line: {
+         type: String,
+         default: '',
+         trim: true,
+      },
+      shipping_address_district: {
+         type: String,
+         default: '',
+         trim: true,
+      },
+      shipping_address_province: {
+         type: String,
+         default: '',
+         trim: true,
+      },
+      shipping_address_country: {
+         type: String,
+         default: '',
+         trim: true,
+      },
+      payment_method: {
+         type: String,
+         enum: PAYMENT_METHODS_ARRAY,
+         required: true,
+      },
       invoice_status: {
          type: String,
-         enum: ['paid', 'unpaid'],
-         default: 'unpaid',
+         enum: INVOICE_STATUS_ARRAY,
+         default: INVOICE_STATUS.PENDING,
          required: true,
       },
       invoice_total: {
