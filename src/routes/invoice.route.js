@@ -15,6 +15,102 @@ const InvoiceController = require('../controllers/invoice.controller');
 /**
  * @swagger
  * /api/v1/invoices:
+ *   get:
+ *     tags: [Invoice]
+ *     summary: Get a list of invoices with optional filtering, search, and pagination
+ *     parameters:
+ *       - in: query
+ *         name: _page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: _limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of items per page
+ *         example: 10
+ *       - in: query
+ *         name: _sort
+ *         schema:
+ *           type: string
+ *           enum: [asc, desc]
+ *           default: asc
+ *         description: Sort direction
+ *         example: asc
+ *       - in: query
+ *         name: _sortBy
+ *         schema:
+ *           type: string
+ *           enum: [invoice_total, createdAt]
+ *           default: createdAt
+ *         description: Field to sort by
+ *         example: createdAt
+ *       - in: query
+ *         name: _invoiceStatus
+ *         schema:
+ *           type: string
+ *           enum: [PENDING, CONFIRMED, REQUEST_CANCEL, CANCELLED, ON_PREPARING, ON_DELIVERING, DELIVERED]
+ *         description: Invoice status to filter by
+ *         example: "DELIVERED"
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 items:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                     properties:
+ *                       _id:
+ *                         type: string
+ *                       product_name:
+ *                         type: string
+ *                       product_description:
+ *                         type: string
+ *                       product_sizes:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       product_colors:
+ *                         type: array
+ *                         items:
+ *                           type: string
+ *                       product_type:
+ *                         type: string
+ *                       product_gender:
+ *                         type: string
+ *                       product_brand:
+ *                         type: string
+ *                       product_price:
+ *                         type: number
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     currentPage:
+ *                       type: integer
+ *                     itemsPerPage:
+ *                       type: integer
+ */
+router.get('/', ErrorHandler(InvoiceController.getAll));
+
+/**
+ * @swagger
+ * /api/v1/invoices:
  *  post:
  *   tags: [Invoice]
  *   requestBody:
@@ -69,5 +165,58 @@ const InvoiceController = require('../controllers/invoice.controller');
  *         type: object
  */
 router.post('/', ErrorHandler(InvoiceController.create));
+
+/**
+ * @swagger
+ * /api/v1/invoices/{id}/status:
+ *   patch:
+ *     summary: Update invoice status
+ *     description: Updates the status of an existing invoice using query parameter
+ *     tags: [Invoice]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Invoice ID
+ *         schema:
+ *           type: string
+ *           example: "507f1f77bcf86cd799439011"
+ *       - in: query
+ *         name: _status
+ *         required: true
+ *         description: The new status for the invoice
+ *         schema:
+ *           type: string
+ *           enum: ["PENDING", "CONFIRMED", "CANCELLED", "ON_PREPARING", "ON_DELIVERING", "DELIVERED"]
+ *           example: "CONFIRMED"
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.patch('/:id/status', ErrorHandler(InvoiceController.updateStatus));
+
+/**
+ * @swagger
+ * /api/v1/invoices/{id}/request-cancel:
+ *   patch:
+ *     summary: Update invoice status to REQUEST_CANCEL
+ *     description: Updates the status of an existing invoice using query parameter
+ *     tags: [Invoice]
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ */
+router.patch(
+   '/:id/request-cancel',
+   ErrorHandler(InvoiceController.updateStatus),
+);
 
 module.exports = router;
