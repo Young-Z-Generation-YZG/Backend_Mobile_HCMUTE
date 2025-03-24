@@ -187,6 +187,8 @@ class ProductService {
          throw new NotFoundError('Product not found');
       }
 
+      product.product_imgs = minimumCloudinaryImg(product.product_imgs);
+
       const filtersInventory = {
          'sku.sku_size': 1,
          'sku.sku_color': 1,
