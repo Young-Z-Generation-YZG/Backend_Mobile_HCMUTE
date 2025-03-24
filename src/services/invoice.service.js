@@ -217,17 +217,18 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.PENDING
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.PENDING}`,
          );
       }
 
-      // case 2: CANCELLED: only PENDING -> CANCELLED
+      // case 2: CANCELLED: only PENDING -> CANCELLED or REQUEST_CANCEL -> CANCELLED
       if (
          _status === INVOICE_STATUS.CANCELLED &&
-         invoice.invoice_status !== INVOICE_STATUS.PENDING
+         invoice.invoice_status !== INVOICE_STATUS.PENDING &&
+         invoice.invoice_status !== INVOICE_STATUS.REQUEST_CANCEL
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.PENDING} or ${INVOICE_STATUS.REQUEST_CANCEL}`,
          );
       }
 
@@ -237,7 +238,7 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.CONFIRMED
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.CONFIRMED}`,
          );
       }
 
@@ -247,7 +248,7 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.ON_PREPARING
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.ON_PREPARING}`,
          );
       }
 
@@ -257,7 +258,7 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.REQUEST_CANCEL
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.REQUEST_CANCEL}`,
          );
       }
 
@@ -267,7 +268,7 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.ON_DELIVERING
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.ON_DELIVERING}`,
          );
       }
 
@@ -277,7 +278,7 @@ class InvoiceService {
          invoice.invoice_status !== INVOICE_STATUS.ON_DELIVERING
       ) {
          throw new BadRequestError(
-            `Cannot update status from ${invoice.invoice_status} to ${_status}`,
+            `Cannot update status from ${invoice.invoice_status} to ${_status}. Order status must be ${INVOICE_STATUS.ON_DELIVERING}`,
          );
       }
 
@@ -286,6 +287,28 @@ class InvoiceService {
       await invoice.save();
 
       return true;
+   }
+
+   async cancelOrder(req) {
+      const { id } = req.params;
+
+      const invoice = await InvoiceModel.findById(id);
+
+      if (!invoice) {
+         throw new NotFoundError('Invoice not found');
+      }
+
+      if (invoice.invoice_status === INVOICE_STATUS.ON_PREPARING) {
+         invoice.invoice_status = INVOICE_STATUS.REQUEST_CANCEL;
+
+         await invoice.save();
+
+         return true;
+      } else {
+         throw new BadRequestError(
+            `Cannot cancel Order with status ${invoice.invoice_status}. Order status must be ${INVOICE_STATUS.ON_PREPARING}`,
+         );
+      }
    }
 }
 

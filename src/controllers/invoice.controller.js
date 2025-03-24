@@ -26,6 +26,14 @@ class InvoiceController {
          data: await InvoiceService.updateStatus(req),
       }).send(res);
    }
+
+   async cancelOrder(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await InvoiceService.cancelOrder(req),
+      }).send(res);
+   }
 }
 
 module.exports = new InvoiceController();

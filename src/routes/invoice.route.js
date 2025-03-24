@@ -201,11 +201,19 @@ router.patch('/:id/status', ErrorHandler(InvoiceController.updateStatus));
 
 /**
  * @swagger
- * /api/v1/invoices/{id}/request-cancel:
+ * /api/v1/invoices/{id}/cancel:
  *   patch:
  *     summary: Update invoice status to REQUEST_CANCEL
  *     description: Updates the status of an existing invoice using query parameter
  *     tags: [Invoice]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Invoice ID
+ *         schema:
+ *           type: string
+ *           example: "507f1f77bcf86cd799439011"
  *   responses:
  *    '200':
  *      description: OK
@@ -214,9 +222,6 @@ router.patch('/:id/status', ErrorHandler(InvoiceController.updateStatus));
  *        schema:
  *         type: object
  */
-router.patch(
-   '/:id/request-cancel',
-   ErrorHandler(InvoiceController.updateStatus),
-);
+router.patch('/:id/cancel', ErrorHandler(InvoiceController.cancelOrder));
 
 module.exports = router;
