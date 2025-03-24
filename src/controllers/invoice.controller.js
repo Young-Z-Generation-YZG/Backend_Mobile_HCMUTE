@@ -11,6 +11,22 @@ class InvoiceController {
       }).send(res);
    }
 
+   async getScheduleJobs(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await InvoiceService.getScheduleJobs(req),
+      }).send(res);
+   }
+
+   async getConfirmationTimeoutById(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await InvoiceService.getConfirmationTimeoutById(req),
+      }).send(res);
+   }
+
    async create(req, res) {
       new CREATED({
          message: 'OK',
@@ -32,6 +48,14 @@ class InvoiceController {
          message: 'OK',
          statusCode: 200,
          data: await InvoiceService.cancelOrder(req),
+      }).send(res);
+   }
+
+   async confirmOrder(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await InvoiceService.confirmOrder(req),
       }).send(res);
    }
 }

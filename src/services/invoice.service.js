@@ -1,5 +1,6 @@
 'use strict';
 
+const schedule = require('node-schedule');
 const InvoiceModel = require('../domain/models/invoice.model');
 const ProductService = require('./product.service');
 const InventoryService = require('./inventory.service');
@@ -17,6 +18,64 @@ const {
 const { default: mongoose } = require('mongoose');
 
 class InvoiceService {
+   constructor() {
+      this.jobs = new Map(); // Store scheduled jobs for cleanup if needed
+   }
+
+   // Schedule auto-confirmation for a specific invoice
+   scheduleAutoConfirmation(invoiceId, createdAt) {
+      const thirtyMinutesLater = new Date(createdAt.getTime() + 30 * 60 * 1000);
+
+      const job = schedule.scheduleJob(thirtyMinutesLater, async () => {
+         try {
+            const invoice = await InvoiceModel.findById(invoiceId);
+            if (!invoice) {
+               console.warn(
+                  `Invoice ${invoiceId} not found for auto-confirmation`,
+               );
+               return;
+            }
+
+            if (invoice.invoice_status === INVOICE_STATUS.PENDING) {
+               invoice.invoice_status = INVOICE_STATUS.CONFIRMED;
+               await invoice.save();
+               console.log(
+                  `Order ${invoiceId} auto-confirmed at ${new Date()}`,
+               );
+            } else {
+               console.log(
+                  `Order ${invoiceId} skipped auto-confirmation (status: ${invoice.invoice_status})`,
+               );
+            }
+
+            // Clean up the job reference
+            this.jobs.delete(invoiceId.toString());
+         } catch (error) {
+            console.error(`Error auto-confirming invoice ${invoiceId}:`, error);
+         }
+      });
+
+      // Store the job reference
+      this.jobs.set(invoiceId.toString(), job);
+      console.log(
+         `Scheduled auto-confirmation for invoice ${invoiceId} at ${thirtyMinutesLater}`,
+      );
+   }
+
+   // Cancel a scheduled job (useful for manual confirmation or cancellation)
+   async cancelAutoConfirmation(invoiceId) {
+      const job = this.jobs.get(invoiceId.toString());
+      if (job) {
+         job.cancel();
+         this.jobs.delete(invoiceId.toString());
+         console.log(
+            `Cancelled auto-confirmation job for invoice ${invoiceId}`,
+         );
+         return true;
+      }
+      return false;
+   }
+
    async getAll(req) {
       const {
          _page = 1,
@@ -106,6 +165,42 @@ class InvoiceService {
       }
    }
 
+   async getScheduleJobs(req) {
+      console.log('Scheduled jobs:', this.jobs.size);
+
+      return Array.from(this.jobs.keys()).map((invoiceId) => ({
+         invoice_id: invoiceId,
+         next_invocation: this.jobs.get(invoiceId).nextInvocation(),
+      }));
+   }
+
+   async getConfirmationTimeoutById(req) {
+      const { id } = req.params;
+
+      const invoice = await InvoiceModel.findById(id);
+
+      if (!invoice) {
+         throw new NotFoundError('Invoice not found');
+      }
+
+      if (invoice.invoice_status !== INVOICE_STATUS.PENDING) {
+         throw new BadRequestError(
+            `Cannot get confirmation timeout for invoice with status ${invoice.invoice_status}. Invoice status must be ${INVOICE_STATUS.PENDING}`,
+         );
+      }
+
+      const job = this.jobs.get(id);
+
+      if (!job) {
+         throw new NotFoundError('Confirmation timeout not found');
+      }
+
+      return {
+         invoice_id: id,
+         next_invocation: job.nextInvocation(),
+      };
+   }
+
    async create(req) {
       const {
          contact_name,
@@ -191,15 +286,15 @@ class InvoiceService {
          throw new BadRequestError('Error creating invoice');
       }
 
+      // Schedule auto-confirmation for this invoice
+      this.scheduleAutoConfirmation(newInvoice._id, newInvoice.createdAt);
+
       return !!newInvoice;
    }
 
    async updateStatus(req) {
       const { id } = req.params;
       const { _status } = req.query;
-
-      console.log('id', id);
-      console.log('_status', _status);
 
       if (!INVOICE_STATUS_ARRAY.includes(_status)) {
          throw new BadRequestError('Invalid status');
@@ -303,10 +398,37 @@ class InvoiceService {
 
          await invoice.save();
 
+         await this.cancelAutoConfirmation(id);
+
          return true;
       } else {
          throw new BadRequestError(
             `Cannot cancel Order with status ${invoice.invoice_status}. Order status must be ${INVOICE_STATUS.ON_PREPARING}`,
+         );
+      }
+   }
+
+   async confirmOrder(req) {
+      const { id } = req.params;
+
+      const invoice = await InvoiceModel.findById(id);
+
+      if (!invoice) {
+         throw new NotFoundError('Invoice not found');
+      }
+
+      if (invoice.invoice_status === INVOICE_STATUS.PENDING) {
+         invoice.invoice_status = INVOICE_STATUS.CONFIRMED;
+
+         await invoice.save();
+
+         // Schedule auto-confirmation
+         await this.cancelAutoConfirmation(id);
+
+         return true;
+      } else {
+         throw new BadRequestError(
+            `Cannot cancel Order with status ${invoice.invoice_status}. Order status must be ${INVOICE_STATUS.PENDING}`,
          );
       }
    }
