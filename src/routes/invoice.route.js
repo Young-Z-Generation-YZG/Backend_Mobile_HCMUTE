@@ -110,6 +110,50 @@ router.get('/', ErrorHandler(InvoiceController.getAll));
 
 /**
  * @swagger
+ * /api/v1/invoices/schedule-jobs:
+ *   get:
+ *     tags: [Invoice]
+ *     summary: Get a list of scheduled jobs
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/schedule-jobs', ErrorHandler(InvoiceController.getScheduleJobs));
+
+/**
+ * @swagger
+ * /api/v1/invoices/{id}/confirmation-timeout:
+ *   get:
+ *     summary: Get confirmation timeout for an invoice
+ *     description: Get the remaining time for the invoice to be confirmed
+ *     tags: [Invoice]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Invoice ID
+ *         schema:
+ *           type: string
+ *           example: "507f1f77bcf86cd799439011"
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get(
+   '/:id/confirmation-timeout',
+   ErrorHandler(InvoiceController.getConfirmationTimeoutById),
+);
+
+/**
+ * @swagger
  * /api/v1/invoices:
  *  post:
  *   tags: [Invoice]
@@ -187,17 +231,42 @@ router.post('/', ErrorHandler(InvoiceController.create));
  *         description: The new status for the invoice
  *         schema:
  *           type: string
- *           enum: ["PENDING", "CONFIRMED", "CANCELLED", "ON_PREPARING", "ON_DELIVERING", "DELIVERED"]
+ *           enum: ["CANCELLED", "ON_PREPARING", "ON_DELIVERING", "DELIVERED"]
  *           example: "CONFIRMED"
- *   responses:
- *    '200':
- *      description: OK
- *      content:
- *       application/json:
- *        schema:
- *         type: object
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
  */
 router.patch('/:id/status', ErrorHandler(InvoiceController.updateStatus));
+
+/**
+ * @swagger
+ * /api/v1/invoices/{id}/confirm:
+ *   patch:
+ *     summary: Update invoice status to CONFIRMED
+ *     description: Updates the status of an existing invoice using query parameter
+ *     tags: [Invoice]
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         description: Invoice ID
+ *         schema:
+ *           type: string
+ *           example: "507f1f77bcf86cd799439011"
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.patch('/:id/confirm', ErrorHandler(InvoiceController.confirmOrder));
 
 /**
  * @swagger
@@ -214,13 +283,13 @@ router.patch('/:id/status', ErrorHandler(InvoiceController.updateStatus));
  *         schema:
  *           type: string
  *           example: "507f1f77bcf86cd799439011"
- *   responses:
- *    '200':
- *      description: OK
- *      content:
- *       application/json:
- *        schema:
- *         type: object
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
  */
 router.patch('/:id/cancel', ErrorHandler(InvoiceController.cancelOrder));
 
