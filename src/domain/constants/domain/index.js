@@ -1,6 +1,6 @@
 const PAYMENT_METHODS_ARRAY = ['COD', 'VNPAY'];
-const SIZES_ARRAY = ['S', 'M', 'L', 'XL', '2XL'];
-const COLORS_ARRAY = ['Yellow', 'Brown', 'Green', 'White'];
+const SIZES_ARRAY = ['S', 'M', 'L', 'XL'];
+const COLORS_ARRAY = ['YELLOW', 'BROWN', 'GREEN', 'WHITE'];
 const INVOICE_STATUS_ARRAY = [
    'PENDING',
    'CONFIRMED',
@@ -28,6 +28,13 @@ const INVOICE_STATUS = {
    PAID: 'PAID',
 };
 
+const VERIFY_TYPES = {
+   EMAIL: 'EMAIL',
+   RESET_PASSWORD: 'RESET_PASSWORD',
+   CHANGE_EMAIL: 'CHANGE_EMAIL',
+   CHANGE_PHONE_NUMBER: 'CHANGE_PHONE_NUMBER',
+};
+
 module.exports = {
    PAYMENT_METHODS_ARRAY,
    SIZES_ARRAY,
@@ -35,4 +42,5 @@ module.exports = {
    INVOICE_STATUS_ARRAY,
    INVOICE_STATUS,
    PAYMENT_METHODS,
+   VERIFY_TYPES,
 };

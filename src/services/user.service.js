@@ -19,7 +19,7 @@ const addressModel = require('../domain/models/address.model');
 const reviewModel = require('../domain/models/review.model');
 const productModel = require('../domain/models/product.model');
 const InvoiceModel = require('../domain/models/invoice.model');
-const { VERIFY_TYPE } = require('../common/constants');
+const { VERIFY_TYPE } = require('../domain/constants/domain');
 
 class UserService {
    // [DONE]

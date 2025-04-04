@@ -4,7 +4,9 @@
   "main": "index.js",
   "scripts": {
     "start": "SET NODE_ENV=development & nodemon server.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "seed": "SET NODE_ENV=development & node src/infrastructure/persistence/seed/index.js",
+    "import-data": "SET NODE_ENV=development & node src/infrastructure/persistence/seed/import-existing-data.js"
   },
   "author": "",
   "license": "ISC",

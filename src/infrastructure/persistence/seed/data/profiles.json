@@ -1,0 +1,73 @@
+[{
+    "_id": {
+      "$oid": "664067331c54661949f71eee"
+    },
+    "profile_firstName": "ADMIN",
+    "profile_lastName": "",
+    "profile_phoneNumber": "0123456789",
+    "profile_address": {
+      "$oid": "664439317954a1ae3c52364c"
+    },
+    "createdAt": {
+      "$date": "2024-05-12T06:52:35.690Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-12T07:03:24.704Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664439317954a1ae3c52364e"
+    },
+    "profile_firstName": "USER",
+    "profile_lastName": "",
+    "profile_phoneNumber": "0123456789",
+    "profile_address": {
+      "$oid": "6645cf80af463a6f3221b47f"
+    },
+    "createdAt": {
+      "$date": "2024-05-15T04:25:21.850Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-16T19:39:05.138Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6645cf80af463a6f3221b481"
+    },
+    "profile_firstName": "STAFF",
+    "profile_lastName": "",
+    "profile_phoneNumber": "0123456789",
+    "profile_address": {
+      "$oid": "6646d53550daf961d0f72f3a"
+    },
+    "createdAt": {
+      "$date": "2024-05-16T09:18:56.812Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-16T11:01:24.261Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "67ef87dd955619090a318e1a"
+    },
+    "profile_firstName": "Foo",
+    "profile_lastName": "Bar",
+    "profile_phoneNumber": "0123456789",
+    "profile_address": {
+      "$oid": "67ef87dd955619090a318e18"
+    },
+    "createdAt": {
+      "$date": "2024-05-16T09:18:56.812Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-16T11:01:24.261Z"
+    },
+    "__v": 0
+  }
+]

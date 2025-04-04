@@ -16,7 +16,7 @@ const MailerService = require('../infrastructure/mailer/mailer.service');
 const RedisService = require('../infrastructure/redis');
 
 const userModel = require('../domain/models/user.model');
-const { VERIFY_TYPE } = require('../common/constants');
+const { VERIFY_TYPES } = require('../domain/constants/domain');
 
 class AccessService {
    // [POST] /auth/register [DONE]
@@ -49,14 +49,14 @@ class AccessService {
       const payload = {
          email: email,
          verified: newUser.verified,
-         verify_type: VERIFY_TYPE.EMAIL,
+         verify_type: VERIFY_TYPES.EMAIL,
       };
 
       const jwtMailToken = JwtService.generateJwtMailToken(payload);
 
       const params = {
          _q: jwtMailToken,
-         _verify_type: VERIFY_TYPE.EMAIL,
+         _verify_type: VERIFY_TYPES.EMAIL,
       };
 
       const encodedUrl = generateEncodedUrl('/api/v1/auth/otp-verify', params);

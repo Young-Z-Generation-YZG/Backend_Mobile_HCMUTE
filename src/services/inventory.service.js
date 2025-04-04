@@ -4,7 +4,7 @@ const {
    NotFoundError,
 } = require('../domain/core/error.response');
 const inventoryModel = require('../domain/models/inventory.model');
-const { COLORS_ARRAY, SIZES_ARRAY } = require('../common/constants/domain');
+const { COLORS_ARRAY, SIZES_ARRAY } = require('../domain/constants/domain');
 
 class InventoryService {
    getByProductVariants = async (productId, productColor, productSize) => {

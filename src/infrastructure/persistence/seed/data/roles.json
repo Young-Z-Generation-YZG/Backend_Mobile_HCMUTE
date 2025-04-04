@@ -1,0 +1,314 @@
+[{
+    "_id": {
+      "$oid": "66434c34fd0d76dfa0eee6d8"
+    },
+    "role_name": "ADMIN",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2024-05-14T11:34:12.599Z"
+    },
+    "role_description": "ADMIN",
+    "role_grants": [
+      {
+        "resource": {
+          "$oid": "66406e98fbb4096d621bfe48"
+        },
+        "actions": [
+          "create:any",
+          "update:any",
+          "read:any",
+          "delete:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6643540a45e56534956bea9d"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cc26684a4f1e7aeeb8a"
+        },
+        "actions": [
+          "create:any",
+          "update:any",
+          "read:any",
+          "delete:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6643540a45e56534956bea9e"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cb76684a4f1e7aeeb88"
+        },
+        "actions": [
+          "create:any",
+          "update:any",
+          "read:any",
+          "delete:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6643540a45e56534956bea9f"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "create:any",
+          "update:any",
+          "read:any",
+          "delete:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6643540a45e56534956beaa0"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d08f7053547ac3b8f9c52"
+        },
+        "actions": [
+          "create:any",
+          "update:any",
+          "read:any",
+          "delete:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6643540a45e56534956beaa1"
+        }
+      }
+    ],
+    "updatedAt": {
+      "$date": "2024-05-14T12:07:38.018Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "66434d1afd0d76dfa0eee8af"
+    },
+    "role_name": "USER",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2024-05-14T11:38:02.020Z"
+    },
+    "role_description": "USER",
+    "role_grants": [
+      {
+        "resource": {
+          "$oid": "66406cc26684a4f1e7aeeb8a"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6645cd4d59c0e32ddae3e69a"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cb76684a4f1e7aeeb88"
+        },
+        "actions": [
+          "create:Own",
+          "read:Own",
+          "update:Own"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6645cd4d59c0e32ddae3e69b"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6645cd4d59c0e32ddae3e69c"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d08f7053547ac3b8f9c52"
+        },
+        "actions": [
+          "update:own",
+          "read:own"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "6645cd4d59c0e32ddae3e69d"
+        }
+      }
+    ],
+    "updatedAt": {
+      "$date": "2024-05-16T09:09:33.883Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "664c021b529494b708d7ae89"
+    },
+    "role_name": "MANAGER",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2024-05-21T02:08:27.496Z"
+    },
+    "role_description": "MANAGER",
+    "role_grants": [
+      {
+        "resource": {
+          "$oid": "6639de2c29e8fd28a2db1548"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c021bd679b4429afeda39"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cc26684a4f1e7aeeb8a"
+        },
+        "actions": [
+          "update:any",
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c021bd679b4429afeda3a"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cb76684a4f1e7aeeb88"
+        },
+        "actions": [
+          "update:any",
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c021bd679b4429afeda3b"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "update:any",
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c021bd679b4429afeda3c"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "update:any",
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c021bd679b4429afeda3d"
+        }
+      }
+    ],
+    "updatedAt": {
+      "$date": "2024-05-21T02:08:27.496Z"
+    }
+  },
+  {
+    "_id": {
+      "$oid": "664c024f529494b708d7aeb0"
+    },
+    "role_name": "STAFF",
+    "__v": 0,
+    "createdAt": {
+      "$date": "2024-05-21T02:09:19.916Z"
+    },
+    "role_description": "STAFF",
+    "role_grants": [
+      {
+        "resource": {
+          "$oid": "6639de2c29e8fd28a2db1548"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c024fd679b4429afeda46"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cc26684a4f1e7aeeb8a"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c024fd679b4429afeda47"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "66406cb76684a4f1e7aeeb88"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c024fd679b4429afeda48"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c024fd679b4429afeda49"
+        }
+      },
+      {
+        "resource": {
+          "$oid": "663d0924053547ac3b8f9c54"
+        },
+        "actions": [
+          "read:any"
+        ],
+        "attributes": "*",
+        "_id": {
+          "$oid": "664c024fd679b4429afeda4a"
+        }
+      }
+    ],
+    "updatedAt": {
+      "$date": "2024-05-21T02:09:19.916Z"
+    }
+  }]
