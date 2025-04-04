@@ -1,7 +1,7 @@
 'use strict';
 
 const redis = require('redis');
-const { REDIS_STATUS } = require('../../common/constants');
+const { REDIS_STATUS } = require('../../domain/constants/index');
 const {
    redis: { REDIS_EXPIRED_IN },
 } = require('../configs/env.config');

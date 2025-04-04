@@ -9,7 +9,7 @@ const {
    PAYMENT_METHODS_ARRAY,
    INVOICE_STATUS,
    INVOICE_STATUS_ARRAY,
-} = require('../common/constants/domain');
+} = require('../domain/constants/domain');
 
 const {
    BadRequestError,
@@ -20,6 +20,182 @@ const { default: mongoose } = require('mongoose');
 class InvoiceService {
    constructor() {
       this.jobs = new Map(); // Store scheduled jobs for cleanup if needed
+   }
+
+   async getAll(req) {
+      const {
+         _page = 1,
+         _limit = 10, // Changed default to 10
+         _sort = 'asc',
+         _sortBy = 'createdAt',
+         _invoiceStatus, // Removed default
+         _paymentMethod, // Added new filter
+         _userId, // Added new filter
+      } = req.query;
+
+      // Parse and validate pagination parameters
+      const page = parseInt(_page, 10);
+      const limit = parseInt(_limit, 10);
+      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
+
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Page must be a positive number');
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+         throw new BadRequestError('Limit must be between 1 and 100');
+      }
+
+      // Validate sort field
+      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
+      const sortField = validSortFields.includes(_sortBy)
+         ? _sortBy
+         : 'createdAt';
+
+      // Build query object
+      const query = {};
+
+      // Filter by invoice status
+      if (_invoiceStatus) {
+         if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
+            throw new BadRequestError('Invalid invoice status');
+         }
+         query.invoice_status = _invoiceStatus;
+      }
+
+      // Filter by payment method
+      if (_paymentMethod) {
+         if (!PAYMENT_METHODS_ARRAY.includes(_paymentMethod)) {
+            throw new BadRequestError('Invalid payment method');
+         }
+         query.payment_method = _paymentMethod;
+      }
+
+      // // Filter by user ID
+      // if (_userId) {
+      //    if (!mongoose.Types.ObjectId.isValid(_userId)) {
+      //       throw new BadRequestError('Invalid user ID');
+      //    }
+      //    query.invoice_user = _userId;
+      // }
+
+      try {
+         // Calculate skip
+         const skip = (page - 1) * limit;
+
+         // Execute queries in parallel
+         const [totalItems, invoices] = await Promise.all([
+            InvoiceModel.countDocuments(query),
+            InvoiceModel.find(query)
+               .sort({ [sortField]: sortDirection })
+               .skip(skip)
+               .limit(limit)
+               .lean(),
+            // .populate('invoice_user', 'email') // Optional: populate user info
+         ]);
+
+         const totalPages = Math.ceil(totalItems / limit);
+
+         return {
+            meta: {
+               total_records: totalItems,
+               total_pages: totalPages,
+               page_size: limit,
+               current_page: page,
+            },
+            items: invoices,
+         };
+      } catch (error) {
+         console.error('Error fetching invoices:', error);
+         throw new BadRequestError(error.message || 'Error fetching invoices');
+      }
+   }
+
+   async getInvoiceOfUser(req) {
+      const { email } = req.user;
+
+      if (!email) {
+         throw new BadRequestError('User not authenticated');
+      }
+
+      const {
+         _page = 1,
+         _limit = 10,
+         _sort = 'asc',
+         _sortBy = 'createdAt',
+         _invoiceStatus,
+      } = req.query;
+
+      // Parse and validate pagination parameters
+      const page = parseInt(_page, 10);
+      const limit = parseInt(_limit, 10);
+      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
+
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Page must be a positive number');
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+         throw new BadRequestError('Limit must be between 1 and 100');
+      }
+
+      // Validate sort field
+      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
+      const sortField = validSortFields.includes(_sortBy)
+         ? _sortBy
+         : 'createdAt';
+
+      try {
+         // Find the user by email
+         const user = await mongoose.model('User').findOne({ email }).lean();
+
+         if (!user) {
+            throw new NotFoundError('User not found');
+         }
+
+         // Build query object
+         const query = {
+            invoice_user: user._id,
+         };
+
+         // Filter by invoice status
+         if (_invoiceStatus) {
+            if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
+               throw new BadRequestError('Invalid invoice status');
+            }
+            query.invoice_status = _invoiceStatus;
+         }
+
+         // Calculate skip
+         const skip = (page - 1) * limit;
+
+         // Execute queries in parallel
+         const [totalItems, invoices] = await Promise.all([
+            InvoiceModel.countDocuments(query),
+            InvoiceModel.find(query)
+               .sort({ [sortField]: sortDirection })
+               .skip(skip)
+               .limit(limit)
+               .lean(),
+         ]);
+
+         const totalPages = Math.ceil(totalItems / limit);
+
+         return {
+            meta: {
+               total_records: totalItems,
+               total_pages: totalPages,
+               page_size: limit,
+               current_page: page,
+            },
+            items: invoices,
+         };
+      } catch (error) {
+         console.error('Error fetching user invoices:', error);
+         throw new BadRequestError(
+            error.message || 'Error fetching user invoices',
+         );
+      }
    }
 
    // Schedule auto-confirmation for a specific invoice
@@ -76,95 +252,6 @@ class InvoiceService {
       return false;
    }
 
-   async getAll(req) {
-      const {
-         _page = 1,
-         _limit = 10, // Changed default to 10
-         _sort = 'asc',
-         _sortBy = 'createdAt',
-         _invoiceStatus, // Removed default
-         _paymentMethod, // Added new filter
-         _userId, // Added new filter
-      } = req.query;
-
-      // Parse and validate pagination parameters
-      const page = parseInt(_page, 10);
-      const limit = parseInt(_limit, 10);
-      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
-
-      if (isNaN(page) || page < 1) {
-         throw new BadRequestError('Page must be a positive number');
-      }
-
-      if (isNaN(limit) || limit < 1 || limit > 100) {
-         throw new BadRequestError('Limit must be between 1 and 100');
-      }
-
-      // Validate sort field
-      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
-      const sortField = validSortFields.includes(_sortBy)
-         ? _sortBy
-         : 'createdAt';
-
-      // Build query object
-      const query = {};
-
-      // Filter by invoice status
-      if (_invoiceStatus) {
-         if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
-            throw new BadRequestError('Invalid invoice status');
-         }
-         query.invoice_status = _invoiceStatus;
-      }
-
-      // Filter by payment method
-      // if (_paymentMethod) {
-      //    if (!PAYMENT_METHODS_ARRAY.includes(_paymentMethod)) {
-      //       throw new BadRequestError('Invalid payment method');
-      //    }
-      //    query.payment_method = _paymentMethod;
-      // }
-
-      // Filter by user ID
-      // if (_userId) {
-      //    if (!mongoose.Types.ObjectId.isValid(_userId)) {
-      //       throw new BadRequestError('Invalid user ID');
-      //    }
-      //    query.invoice_user = _userId;
-      // }
-
-      try {
-         // Calculate skip
-         const skip = (page - 1) * limit;
-
-         // Execute queries in parallel
-         const [totalItems, invoices] = await Promise.all([
-            InvoiceModel.countDocuments(query),
-            InvoiceModel.find(query)
-               .sort({ [sortField]: sortDirection })
-               .skip(skip)
-               .limit(limit)
-               .lean(),
-            // .populate('invoice_user', 'email') // Optional: populate user info
-         ]);
-
-         const totalPages = Math.ceil(totalItems / limit);
-
-         return {
-            meta: {
-               total_records: totalItems,
-               total_pages: totalPages,
-               page_size: limit,
-               current_page: page,
-            },
-            items: invoices,
-         };
-      } catch (error) {
-         console.error('Error fetching invoices:', error);
-         throw new BadRequestError(error.message || 'Error fetching invoices');
-      }
-   }
-
    async getScheduleJobs(req) {
       console.log('Scheduled jobs:', this.jobs.size);
 
@@ -201,6 +288,7 @@ class InvoiceService {
       };
    }
 
+   // [DONE]
    async create(req) {
       const {
          contact_name,
@@ -213,12 +301,19 @@ class InvoiceService {
          total_amount,
       } = req.body;
 
-      const userEmail = 'lov3rinve146@gmail.com';
+      const { email } = req.user;
 
       const { bought_items = [] } = req.body;
 
       if (!PAYMENT_METHODS_ARRAY.includes(payment_method)) {
          throw new BadRequestError('Invalid payment method');
+      }
+
+      // Find user by email
+      const user = await mongoose.model('User').findOne({ email }).lean();
+
+      if (!user) {
+         throw new NotFoundError('User not found');
       }
 
       // check products in stock
@@ -268,7 +363,7 @@ class InvoiceService {
       });
 
       const newInvoice = await InvoiceModel.create({
-         invoice_user: new mongoose.Types.ObjectId('664439317954a1ae3c523650'),
+         invoice_user: user._id,
          contact_name: contact_name,
          contact_phone_number: contact_phone_number,
          invoice_products: invoiceProducts,

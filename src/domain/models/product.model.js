@@ -9,6 +9,21 @@ const categoryModel = require('./category.model');
 const COLLECTION_NAME = 'Products';
 const DOCUMENT_NAME = 'Product';
 
+// Define the schema for rating star items without _id
+const ratingStarSchema = new Schema(
+   {
+      star: {
+         type: Number,
+         enum: [1, 2, 3, 4, 5],
+      },
+      star_count: {
+         type: Number,
+         default: 0,
+      },
+   },
+   { _id: false },
+);
+
 const productSchema = new Schema(
    {
       product_code: {
@@ -28,12 +43,12 @@ const productSchema = new Schema(
       },
       product_sizes: {
          type: [String],
-         enum: ['S', 'M', 'L', 'XL', '2XL'],
+         enum: ['S', 'M', 'L', 'XL'],
          required: true,
       },
       product_colors: {
          type: [String],
-         enum: ['Yellow', 'Red', 'Brown', 'Gray', 'Pink', 'White'],
+         enum: ['YELLOW', 'GREEN', 'BROWN', 'WHITE'],
          required: true,
       },
       product_stocks: {
@@ -51,12 +66,12 @@ const productSchema = new Schema(
       },
       product_type: {
          type: String,
-         enum: ['Clothe', 'Trousers', 'Shoes'],
+         enum: ['clothe', 'trousers', 'shoes'],
          trim: true,
       },
       product_gender: {
          type: String,
-         enum: ['Man', 'Woman', 'Unisex'],
+         enum: ['man', 'woman', 'unisex'],
          trim: true,
       },
       product_brand: {
@@ -75,23 +90,42 @@ const productSchema = new Schema(
       },
       product_status: {
          type: String,
-         enum: ['Draft', 'Published', 'Scheduled'],
+         enum: ['DRAFT', 'PUBLISHED', 'SCHEDULED'],
       },
-      product_promotion: {
-         type: {
-            promotion_id: {
-               type: Schema.Types.ObjectId,
-               ref: 'Promotion',
-            },
-            current_discount: {
-               type: Number,
-               min: 0,
-               max: 100,
-            },
-            start_date: Date,
-            end_date: Date,
+      average_rating: {
+         average_value: {
+            type: Number,
+            default: 0,
          },
-         default: null,
+         rating_count: {
+            type: Number,
+            default: 0,
+         },
+      },
+      rating_star: {
+         type: [ratingStarSchema],
+         default: [
+            {
+               star: 1,
+               star_count: 0,
+            },
+            {
+               star: 2,
+               star_count: 0,
+            },
+            {
+               star: 3,
+               star_count: 0,
+            },
+            {
+               star: 4,
+               star_count: 0,
+            },
+            {
+               star: 5,
+               star_count: 0,
+            },
+         ],
       },
    },
    {
@@ -113,28 +147,5 @@ productSchema.index(
       },
    },
 );
-
-// // Add virtual fields for discount calculation
-// productSchema.virtual('current_discount').get(function () {
-//    if (!this.product_promotion) return 0;
-
-//    const now = new Date();
-//    if (
-//       this.product_promotion.start_date <= now &&
-//       this.product_promotion.end_date > now
-//    ) {
-//       return this.product_promotion.current_discount;
-//    }
-//    return 0;
-// });
-
-// productSchema.virtual('final_price').get(function () {
-//    const discount = this.current_discount || 0;
-//    return Math.ceil(this.product_price * (1 - discount / 100));
-// });
-
-// // Ensure virtual fields are included
-// productSchema.set('toJSON', { virtuals: true });
-// productSchema.set('toObject', { virtuals: true });
 
 module.exports = model(DOCUMENT_NAME, productSchema);

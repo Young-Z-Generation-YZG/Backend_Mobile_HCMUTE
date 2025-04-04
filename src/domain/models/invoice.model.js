@@ -6,7 +6,7 @@ const {
    COLORS_ARRAY,
    SIZES_ARRAY,
    PAYMENT_METHODS_ARRAY,
-} = require('../../common/constants/domain');
+} = require('../constants/domain');
 
 const COLLECTION_NAME = 'Invoices';
 const DOCUMENT_NAME = 'invoice';

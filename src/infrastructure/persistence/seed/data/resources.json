@@ -1,0 +1,70 @@
+[{
+    "_id": {
+      "$oid": "663d08f7053547ac3b8f9c52"
+    },
+    "res_name": "users",
+    "res_description": "users",
+    "createdAt": {
+      "$date": "2024-05-09T17:33:43.016Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-09T17:33:43.016Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "663d0924053547ac3b8f9c54"
+    },
+    "res_name": "products",
+    "res_description": "products",
+    "createdAt": {
+      "$date": "2024-05-09T17:34:28.138Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-09T17:34:28.138Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "66406cb76684a4f1e7aeeb88"
+    },
+    "res_name": "invoices",
+    "res_description": "",
+    "createdAt": {
+      "$date": "2024-05-12T07:16:07.579Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-12T07:16:07.579Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "66406cc26684a4f1e7aeeb8a"
+    },
+    "res_name": "categories",
+    "res_description": "",
+    "createdAt": {
+      "$date": "2024-05-12T07:16:18.035Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-12T07:16:18.035Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "66406e98fbb4096d621bfe48"
+    },
+    "res_name": "rbac",
+    "res_description": "",
+    "createdAt": {
+      "$date": "2024-05-12T07:24:08.105Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-12T07:24:08.105Z"
+    },
+    "__v": 0
+  }]

@@ -1,0 +1,620 @@
+[{
+  "_id": {
+    "$oid": "66468e5e529494b708d5909a"
+  },
+  "product_code": "#LVCOM-715920526",
+  "product_name": "sunflower jumpsuit",
+  "product_description": "desc",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "YELLOW"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "o067lfbi9pslzilrezop",
+      "width": 690,
+      "height": 875,
+      "bytes": 114418,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839380/Sunflower-Jumpsuit-1-690x875_dibawa.webp"
+    },
+    {
+      "public_id": "kocpciojpyqu8guse9yp",
+      "width": 690,
+      "height": 875,
+      "bytes": 62264,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839472/Sunflower-Jumpsuit-2_jinmmj.webp"
+    },
+    {
+      "public_id": "k2awb5alwi9fp8zvsbqs",
+      "width": 690,
+      "height": 875,
+      "bytes": 70346,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839514/Sunflower-Jumpsuit-3-690x875_erkdab.webp"
+    }
+  ],
+  "product_category": {
+    "$oid": "664359cb35e84033bbd0e6f3"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "louis vuitton",
+  "product_price": 100,
+  "product_slug": "sunflower-jumpsuit",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.112Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.112Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a5eb529494b708d5a0ab"
+  },
+  "product_code": "#GCJTM-715906019",
+  "product_name": "dust lightweight jacket",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "YELLOW"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "dss0f8cl21abor5xw4cj",
+      "width": 690,
+      "height": 884,
+      "bytes": 32816,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839883/Dust-Lightweight-Jacket-1-690x884_lyplkn.jpg"
+    },
+    {
+      "public_id": "zpot2gc0zylneovzyjlq",
+      "width": 690,
+      "height": 884,
+      "bytes": 19108,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839888/Dust-Lightweight-Jacket-2-690x884_r4k8us.jpg"
+    },
+    {
+      "public_id": "o4jukioifhvria2ktov6",
+      "width": 690,
+      "height": 884,
+      "bytes": 56952,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839905/Black-Tall-Jacket-1-690x884_rxcntu.jpg"
+    },
+    {
+      "public_id": "gudct1sk1mvmyl8rtxwl",
+      "width": 690,
+      "height": 884,
+      "bytes": 20020,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729839910/Black-Tall-Jacket-2-690x884_uswntd.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "6643585335e84033bbd0e6d4"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "gucci",
+  "product_price": 85,
+  "product_slug": "dust-lightweight-jacket",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.208Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.208Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a6a5529494b708d5a12c"
+  },
+  "product_code": "#CHMAW-715906209",
+  "product_name": "dark olive short dress",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "GREEN"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "sovivj3addn3mwi4sjzz",
+      "width": 690,
+      "height": 884,
+      "bytes": 18090,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840067/Dark-Olive-Short-Dress-1-690x884_aekufk.jpg"
+    },
+    {
+      "public_id": "fvbu91zwyjfvbt6ognah",
+      "width": 690,
+      "height": 884,
+      "bytes": 36180,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840074/Dark-Olive-Short-Dress-2-690x884_xtg6xo.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "664359e535e84033bbd0e6f9"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "chanel",
+  "product_price": 79,
+  "product_slug": "dark-olive-short-dress",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.290Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.290Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a744529494b708d5a198"
+  },
+  "product_code": "#CHMAW-715906366",
+  "product_name": "white dressed pants",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M"
+  ],
+  "product_colors": [
+    "WHITE"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "lcgrealtuoqmwcdpj8wo",
+      "width": 690,
+      "height": 884,
+      "bytes": 56952,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840351/White-Dressed-Pants-1-690x884_lem34h.jpg"
+    },
+    {
+      "public_id": "gll7dynyo2aqnq6w882b",
+      "width": 690,
+      "height": 884,
+      "bytes": 20020,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840354/White-Dressed-Pants-2-690x884_yqrnjp.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "6643598a35e84033bbd0e6ed"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "chanel",
+  "product_price": 120,
+  "product_slug": "white-dressed-pants",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.376Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.376Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a7b6529494b708d5a1ee"
+  },
+  "product_code": "#CHMAW-715906482",
+  "product_name": "karatima outerwear",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "BROWN"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "nut6adhyienli8usehin",
+      "width": 690,
+      "height": 884,
+      "bytes": 29472,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840518/Karatima-Outerwear-1-690x884_v2kvek.jpg"
+    },
+    {
+      "public_id": "mdwefjxiixmgyklawonh",
+      "width": 690,
+      "height": 884,
+      "bytes": 14282,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840523/Karatima-Outerwear-2-690x884_ltwbra.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "6643581f35e84033bbd0e6c8"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "chanel",
+  "product_price": 170,
+  "product_slug": "karatima-outerwear",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.457Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.457Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a822529494b708d5a23b"
+  },
+  "product_code": "#CHPZW-715906590",
+  "product_name": "apple cinnam pants",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "GREEN"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "ockqdq4gdgcwdt7jni7g",
+      "width": 690,
+      "height": 884,
+      "bytes": 26578,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840556/Apple-Cinnam-Pants-1-690x884_wgabxx.jpg"
+    },
+    {
+      "public_id": "zxqbiltfc76yeucsffnf",
+      "width": 690,
+      "height": 884,
+      "bytes": 11780,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840559/Apple-Cinnam-Pants-2-690x884_xtcesi.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "6643590035e84033bbd0e6e7"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "Chanel",
+  "product_price": 20,
+  "product_slug": "apple-cinnam-pants",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.540Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T09:34:07.680Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a8e0529494b708d5a2b9"
+  },
+  "product_code": "#PRWCW-715906777",
+  "product_name": "lime punch outerwear",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "BROWN"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "kxlplvnb8fu6oilgrlvu",
+      "width": 690,
+      "height": 884,
+      "bytes": 69818,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840765/Butter-Cream-Dress-1-690x884_h0gicf.jpg"
+    },
+    {
+      "public_id": "avblqswv3mwoev749bir",
+      "width": 690,
+      "height": 884,
+      "bytes": 26608,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840792/Butter-Cream-Dress-2-690x884_gavmnm.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "664a43551b5f9bac99f1e3ba"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "prada",
+  "product_price": 129,
+  "product_slug": "lime-punch-outerwear",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.622Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.622Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646a991529494b708d5a35e"
+  },
+  "product_code": "#PRWCW-715906954",
+  "product_name": "leather brown outerwear",
+  "product_description": "Our products use finest materials and stunning design to create something special. Transformative colours, bold textiles and unique prints, natural fibres with high our quality craftsmanship design remains at forefront. We believe in creating unique products, so we use finest materials and stunning design to create special items.",
+  "product_sizes": [
+    "S",
+    "M",
+    "L"
+  ],
+  "product_colors": [
+    "BROWN"
+  ],
+  "product_stocks": 300,
+  "product_imgs": [
+    {
+      "public_id": "bs1wkywfbsqfvzmshrqo",
+      "width": 690,
+      "height": 884,
+      "bytes": 61874,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840719/Leather-Brown-Outerwear-1-690x884_am3cdb.jpg"
+    },
+    {
+      "public_id": "gokscttttfegxq7oo6ip",
+      "width": 690,
+      "height": 884,
+      "bytes": 25526,
+      "secure_url": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840758/Leather-Brown-Outerwear-2-690x884_pi8uum.jpg"
+    }
+  ],
+  "product_category": {
+    "$oid": "6643585335e84033bbd0e6d4"
+  },
+  "product_type": "clothe",
+  "product_gender": "woman",
+  "product_brand": "prada",
+  "product_price": 129,
+  "product_slug": "leather-brown-outerwear",
+  "product_status": "PUBLISHED",
+  "average_rating": {
+    "average_value": 0,
+    "rating_count": 0
+  },
+  "rating_star": [
+    {
+      "star": 1,
+      "star_count": 0
+    },
+    {
+      "star": 2,
+      "star_count": 0
+    },
+    {
+      "star": 3,
+      "star_count": 0
+    },
+    {
+      "star": 4,
+      "star_count": 0
+    },
+    {
+      "star": 5,
+      "star_count": 0
+    }
+  ],
+  "createdAt": {
+    "$date": "2025-04-04T08:06:36.701Z"
+  },
+  "updatedAt": {
+    "$date": "2025-04-04T08:06:36.701Z"
+  },
+  "__v": 0
+}]

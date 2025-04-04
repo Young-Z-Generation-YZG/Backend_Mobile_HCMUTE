@@ -1,0 +1,247 @@
+[{
+    "_id": {
+      "$oid": "664351ae0087aa09993f5dc5"
+    },
+    "category_name": "Dresses",
+    "category_parentId": null,
+    "createdAt": {
+      "$date": "2024-05-14T11:57:34.249Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T11:57:34.249Z"
+    },
+    "category_slug": "dresses",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664351c80087aa09993f5dcb"
+    },
+    "category_name": "Outerwear",
+    "category_parentId": null,
+    "createdAt": {
+      "$date": "2024-05-14T11:58:00.763Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T11:58:00.763Z"
+    },
+    "category_slug": "outerwear",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664351e90087aa09993f5dd7"
+    },
+    "category_name": "Pants",
+    "category_parentId": null,
+    "createdAt": {
+      "$date": "2024-05-14T11:58:33.545Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T11:58:33.545Z"
+    },
+    "category_slug": "pants",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664355f845e56534956beaab"
+    },
+    "category_name": "Blouses",
+    "category_parentId": null,
+    "createdAt": {
+      "$date": "2024-05-14T12:15:52.727Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:15:52.727Z"
+    },
+    "category_slug": "blouses",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664357a235e84033bbd0e6b6"
+    },
+    "category_name": "Dressy Blouses",
+    "category_parentId": {
+      "$oid": "664355f845e56534956beaab"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:22:58.975Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:22:58.975Z"
+    },
+    "category_slug": "dressy-blouses",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664357c335e84033bbd0e6bc"
+    },
+    "category_name": "Tunic",
+    "category_parentId": {
+      "$oid": "664355f845e56534956beaab"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:23:31.944Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:23:31.944Z"
+    },
+    "category_slug": "tunic",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664357d735e84033bbd0e6c2"
+    },
+    "category_name": "Short Sleeve",
+    "category_parentId": {
+      "$oid": "664355f845e56534956beaab"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:23:51.321Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:23:51.321Z"
+    },
+    "category_slug": "short-sleeve",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6643581f35e84033bbd0e6c8"
+    },
+    "category_name": "Jackets",
+    "category_parentId": {
+      "$oid": "664351c80087aa09993f5dcb"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:25:03.696Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:25:03.696Z"
+    },
+    "category_slug": "jackets",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6643585335e84033bbd0e6d4"
+    },
+    "category_name": "Winter Coats",
+    "category_parentId": {
+      "$oid": "664351c80087aa09993f5dcb"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:25:55.658Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:25:55.658Z"
+    },
+    "category_slug": "winter-coats",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6643587435e84033bbd0e6da"
+    },
+    "category_name": "Rain Jackets",
+    "category_parentId": {
+      "$oid": "664351c80087aa09993f5dcb"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:26:28.087Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:26:28.087Z"
+    },
+    "category_slug": "rain-jackets",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6643590035e84033bbd0e6e7"
+    },
+    "category_name": "Jeans",
+    "category_parentId": {
+      "$oid": "664351e90087aa09993f5dd7"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:28:48.260Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:28:48.260Z"
+    },
+    "category_slug": "jeans",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6643598a35e84033bbd0e6ed"
+    },
+    "category_name": "Palazzos",
+    "category_parentId": {
+      "$oid": "664351e90087aa09993f5dd7"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:31:06.622Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:31:06.622Z"
+    },
+    "category_slug": "palazzos",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664359cb35e84033bbd0e6f3"
+    },
+    "category_name": "Maxi",
+    "category_parentId": {
+      "$oid": "664351ae0087aa09993f5dc5"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:32:11.842Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:32:11.842Z"
+    },
+    "category_slug": "maxi",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664359e535e84033bbd0e6f9"
+    },
+    "category_name": "Cocktail",
+    "category_parentId": {
+      "$oid": "664351ae0087aa09993f5dc5"
+    },
+    "createdAt": {
+      "$date": "2024-05-14T12:32:37.793Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-14T12:32:37.793Z"
+    },
+    "category_slug": "cocktail",
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664a43551b5f9bac99f1e3ba"
+    },
+    "category_name": "Asymmetric",
+    "category_parentId": {
+      "$oid": "664351ae0087aa09993f5dc5"
+    },
+    "createdAt": {
+      "$date": "2024-05-19T18:22:13.971Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-19T18:22:13.971Z"
+    },
+    "category_slug": "asymmetric",
+    "__v": 0
+  }]
