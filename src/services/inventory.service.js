@@ -7,6 +7,27 @@ const inventoryModel = require('../domain/models/inventory.model');
 const { COLORS_ARRAY, SIZES_ARRAY } = require('../domain/constants/domain');
 
 class InventoryService {
+   getByProductId = async (productId, filters = {}) => {
+      if (productId === Schema.Types.ObjectId) {
+         throw new BadRequestError('Something wrong with product ID');
+      }
+
+      try {
+         const inventory = await inventoryModel.find(
+            {
+               inventory_product: productId,
+            },
+            filters,
+         );
+
+         return inventory;
+      } catch (err) {
+         console.error(err);
+      }
+
+      return null;
+   };
+
    getByProductVariants = async (productId, productColor, productSize) => {
       if (!productColor && !productSize) {
          throw new BadRequestError('Color and size are required');

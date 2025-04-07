@@ -3,6 +3,24 @@ const { model, Schema } = require('mongoose');
 const COLLECTION_NAME = 'Inventory';
 const DOCUMENT_NAME = 'inventory';
 
+const skuSchema = new Schema(
+   {
+      sku_color: {
+         type: String,
+         default: '',
+      },
+      sku_size: {
+         type: String,
+         default: '',
+      },
+      quantity: {
+         type: Number,
+         default: 0,
+      },
+   },
+   { _id: false },
+);
+
 const inventorySchema = new Schema(
    {
       inventory_product: {
@@ -12,20 +30,7 @@ const inventorySchema = new Schema(
          index: true,
       },
       sku: {
-         type: {
-            sku_color: {
-               type: String,
-               default: '',
-            },
-            sku_size: {
-               type: String,
-               default: '',
-            },
-            quantity: {
-               type: Number,
-               default: 0,
-            },
-         },
+         type: skuSchema,
          required: true,
       },
    },

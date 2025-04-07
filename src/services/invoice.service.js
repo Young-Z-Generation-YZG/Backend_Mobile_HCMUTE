@@ -4,6 +4,7 @@ const schedule = require('node-schedule');
 const InvoiceModel = require('../domain/models/invoice.model');
 const ProductService = require('./product.service');
 const InventoryService = require('./inventory.service');
+const VoucherService = require('./voucher.service');
 const {
    PAYMENT_METHODS,
    PAYMENT_METHODS_ARRAY,
@@ -299,6 +300,7 @@ class InvoiceService {
          address_country,
          payment_method,
          total_amount,
+         voucher_code,
       } = req.body;
 
       const { email } = req.user;
@@ -349,8 +351,15 @@ class InvoiceService {
          );
       }
 
+      // Apply voucher if provided
+      const voucherResult = await VoucherService.applyVoucher(
+         voucher_code,
+         user._id,
+         total_amount,
+      );
+
       // Create new Invoice with default status = "PENDING"
-      var invoiceProducts = bought_items.map((item) => {
+      const invoiceProducts = bought_items.map((item) => {
          return {
             product_id: new mongoose.Types.ObjectId(item.product_id),
             product_name: item.product_name,
@@ -362,29 +371,57 @@ class InvoiceService {
          };
       });
 
-      const newInvoice = await InvoiceModel.create({
-         invoice_user: user._id,
-         contact_name: contact_name,
-         contact_phone_number: contact_phone_number,
-         invoice_products: invoiceProducts,
-         invoice_note: '',
-         shipping_address_line: address_line,
-         shipping_address_district: address_district,
-         shipping_address_province: address_province,
-         shipping_address_country: address_country,
-         payment_method: PAYMENT_METHODS.COD,
-         invoice_status: INVOICE_STATUS.PENDING,
-         invoice_total: total_amount,
-      });
+      const session = await mongoose.startSession();
+      session.startTransaction();
 
-      if (!newInvoice) {
-         throw new BadRequestError('Error creating invoice');
+      try {
+         // Create the invoice
+         const newInvoice = await InvoiceModel.create(
+            [
+               {
+                  invoice_user: user._id,
+                  contact_name: contact_name,
+                  contact_phone_number: contact_phone_number,
+                  invoice_products: invoiceProducts,
+                  invoice_note: '',
+                  shipping_address_line: address_line,
+                  shipping_address_district: address_district,
+                  shipping_address_province: address_province,
+                  shipping_address_country: address_country,
+                  payment_method: PAYMENT_METHODS.COD,
+                  invoice_status: INVOICE_STATUS.PENDING,
+                  invoice_total: voucherResult.finalAmount,
+                  original_amount: total_amount,
+                  applied_voucher: voucherResult.voucher,
+               },
+            ],
+            { session },
+         );
+
+         // Update voucher usage if one was applied
+         if (voucherResult.isApplied) {
+            await VoucherService.markVoucherAsUsed(
+               voucherResult.voucher.voucher_id,
+               session,
+            );
+         }
+
+         await session.commitTransaction();
+
+         // Schedule auto-confirmation for this invoice
+         this.scheduleAutoConfirmation(
+            newInvoice[0]._id,
+            newInvoice[0].createdAt,
+         );
+
+         return true;
+      } catch (error) {
+         await session.abortTransaction();
+         console.error('Error creating invoice:', error);
+         throw new BadRequestError(error.message || 'Failed to create invoice');
+      } finally {
+         session.endSession();
       }
-
-      // Schedule auto-confirmation for this invoice
-      this.scheduleAutoConfirmation(newInvoice._id, newInvoice.createdAt);
-
-      return !!newInvoice;
    }
 
    async updateStatus(req) {
