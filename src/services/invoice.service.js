@@ -4,12 +4,13 @@ const schedule = require('node-schedule');
 const InvoiceModel = require('../domain/models/invoice.model');
 const ProductService = require('./product.service');
 const InventoryService = require('./inventory.service');
+const VoucherService = require('./voucher.service');
 const {
    PAYMENT_METHODS,
    PAYMENT_METHODS_ARRAY,
    INVOICE_STATUS,
    INVOICE_STATUS_ARRAY,
-} = require('../common/constants/domain');
+} = require('../domain/constants/domain');
 
 const {
    BadRequestError,
@@ -20,6 +21,182 @@ const { default: mongoose } = require('mongoose');
 class InvoiceService {
    constructor() {
       this.jobs = new Map(); // Store scheduled jobs for cleanup if needed
+   }
+
+   async getAll(req) {
+      const {
+         _page = 1,
+         _limit = 10, // Changed default to 10
+         _sort = 'asc',
+         _sortBy = 'createdAt',
+         _invoiceStatus, // Removed default
+         _paymentMethod, // Added new filter
+         _userId, // Added new filter
+      } = req.query;
+
+      // Parse and validate pagination parameters
+      const page = parseInt(_page, 10);
+      const limit = parseInt(_limit, 10);
+      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
+
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Page must be a positive number');
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+         throw new BadRequestError('Limit must be between 1 and 100');
+      }
+
+      // Validate sort field
+      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
+      const sortField = validSortFields.includes(_sortBy)
+         ? _sortBy
+         : 'createdAt';
+
+      // Build query object
+      const query = {};
+
+      // Filter by invoice status
+      if (_invoiceStatus) {
+         if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
+            throw new BadRequestError('Invalid invoice status');
+         }
+         query.invoice_status = _invoiceStatus;
+      }
+
+      // Filter by payment method
+      if (_paymentMethod) {
+         if (!PAYMENT_METHODS_ARRAY.includes(_paymentMethod)) {
+            throw new BadRequestError('Invalid payment method');
+         }
+         query.payment_method = _paymentMethod;
+      }
+
+      // // Filter by user ID
+      // if (_userId) {
+      //    if (!mongoose.Types.ObjectId.isValid(_userId)) {
+      //       throw new BadRequestError('Invalid user ID');
+      //    }
+      //    query.invoice_user = _userId;
+      // }
+
+      try {
+         // Calculate skip
+         const skip = (page - 1) * limit;
+
+         // Execute queries in parallel
+         const [totalItems, invoices] = await Promise.all([
+            InvoiceModel.countDocuments(query),
+            InvoiceModel.find(query)
+               .sort({ [sortField]: sortDirection })
+               .skip(skip)
+               .limit(limit)
+               .lean(),
+            // .populate('invoice_user', 'email') // Optional: populate user info
+         ]);
+
+         const totalPages = Math.ceil(totalItems / limit);
+
+         return {
+            meta: {
+               total_records: totalItems,
+               total_pages: totalPages,
+               page_size: limit,
+               current_page: page,
+            },
+            items: invoices,
+         };
+      } catch (error) {
+         console.error('Error fetching invoices:', error);
+         throw new BadRequestError(error.message || 'Error fetching invoices');
+      }
+   }
+
+   async getInvoiceOfUser(req) {
+      const { email } = req.user;
+
+      if (!email) {
+         throw new BadRequestError('User not authenticated');
+      }
+
+      const {
+         _page = 1,
+         _limit = 10,
+         _sort = 'asc',
+         _sortBy = 'createdAt',
+         _invoiceStatus,
+      } = req.query;
+
+      // Parse and validate pagination parameters
+      const page = parseInt(_page, 10);
+      const limit = parseInt(_limit, 10);
+      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
+
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Page must be a positive number');
+      }
+
+      if (isNaN(limit) || limit < 1 || limit > 100) {
+         throw new BadRequestError('Limit must be between 1 and 100');
+      }
+
+      // Validate sort field
+      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
+      const sortField = validSortFields.includes(_sortBy)
+         ? _sortBy
+         : 'createdAt';
+
+      try {
+         // Find the user by email
+         const user = await mongoose.model('User').findOne({ email }).lean();
+
+         if (!user) {
+            throw new NotFoundError('User not found');
+         }
+
+         // Build query object
+         const query = {
+            invoice_user: user._id,
+         };
+
+         // Filter by invoice status
+         if (_invoiceStatus) {
+            if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
+               throw new BadRequestError('Invalid invoice status');
+            }
+            query.invoice_status = _invoiceStatus;
+         }
+
+         // Calculate skip
+         const skip = (page - 1) * limit;
+
+         // Execute queries in parallel
+         const [totalItems, invoices] = await Promise.all([
+            InvoiceModel.countDocuments(query),
+            InvoiceModel.find(query)
+               .sort({ [sortField]: sortDirection })
+               .skip(skip)
+               .limit(limit)
+               .lean(),
+         ]);
+
+         const totalPages = Math.ceil(totalItems / limit);
+
+         return {
+            meta: {
+               total_records: totalItems,
+               total_pages: totalPages,
+               page_size: limit,
+               current_page: page,
+            },
+            items: invoices,
+         };
+      } catch (error) {
+         console.error('Error fetching user invoices:', error);
+         throw new BadRequestError(
+            error.message || 'Error fetching user invoices',
+         );
+      }
    }
 
    // Schedule auto-confirmation for a specific invoice
@@ -76,95 +253,6 @@ class InvoiceService {
       return false;
    }
 
-   async getAll(req) {
-      const {
-         _page = 1,
-         _limit = 10, // Changed default to 10
-         _sort = 'asc',
-         _sortBy = 'createdAt',
-         _invoiceStatus, // Removed default
-         _paymentMethod, // Added new filter
-         _userId, // Added new filter
-      } = req.query;
-
-      // Parse and validate pagination parameters
-      const page = parseInt(_page, 10);
-      const limit = parseInt(_limit, 10);
-      const sortDirection = _sort.toLowerCase() === 'desc' ? -1 : 1;
-
-      if (isNaN(page) || page < 1) {
-         throw new BadRequestError('Page must be a positive number');
-      }
-
-      if (isNaN(limit) || limit < 1 || limit > 100) {
-         throw new BadRequestError('Limit must be between 1 and 100');
-      }
-
-      // Validate sort field
-      const validSortFields = ['createdAt', 'updatedAt', 'invoice_total'];
-      const sortField = validSortFields.includes(_sortBy)
-         ? _sortBy
-         : 'createdAt';
-
-      // Build query object
-      const query = {};
-
-      // Filter by invoice status
-      if (_invoiceStatus) {
-         if (!INVOICE_STATUS_ARRAY.includes(_invoiceStatus)) {
-            throw new BadRequestError('Invalid invoice status');
-         }
-         query.invoice_status = _invoiceStatus;
-      }
-
-      // Filter by payment method
-      // if (_paymentMethod) {
-      //    if (!PAYMENT_METHODS_ARRAY.includes(_paymentMethod)) {
-      //       throw new BadRequestError('Invalid payment method');
-      //    }
-      //    query.payment_method = _paymentMethod;
-      // }
-
-      // Filter by user ID
-      // if (_userId) {
-      //    if (!mongoose.Types.ObjectId.isValid(_userId)) {
-      //       throw new BadRequestError('Invalid user ID');
-      //    }
-      //    query.invoice_user = _userId;
-      // }
-
-      try {
-         // Calculate skip
-         const skip = (page - 1) * limit;
-
-         // Execute queries in parallel
-         const [totalItems, invoices] = await Promise.all([
-            InvoiceModel.countDocuments(query),
-            InvoiceModel.find(query)
-               .sort({ [sortField]: sortDirection })
-               .skip(skip)
-               .limit(limit)
-               .lean(),
-            // .populate('invoice_user', 'email') // Optional: populate user info
-         ]);
-
-         const totalPages = Math.ceil(totalItems / limit);
-
-         return {
-            meta: {
-               total_records: totalItems,
-               total_pages: totalPages,
-               page_size: limit,
-               current_page: page,
-            },
-            items: invoices,
-         };
-      } catch (error) {
-         console.error('Error fetching invoices:', error);
-         throw new BadRequestError(error.message || 'Error fetching invoices');
-      }
-   }
-
    async getScheduleJobs(req) {
       console.log('Scheduled jobs:', this.jobs.size);
 
@@ -201,6 +289,7 @@ class InvoiceService {
       };
    }
 
+   // [DONE]
    async create(req) {
       const {
          contact_name,
@@ -211,14 +300,22 @@ class InvoiceService {
          address_country,
          payment_method,
          total_amount,
+         voucher_code,
       } = req.body;
 
-      const userEmail = 'lov3rinve146@gmail.com';
+      const { email } = req.user;
 
       const { bought_items = [] } = req.body;
 
       if (!PAYMENT_METHODS_ARRAY.includes(payment_method)) {
          throw new BadRequestError('Invalid payment method');
+      }
+
+      // Find user by email
+      const user = await mongoose.model('User').findOne({ email }).lean();
+
+      if (!user) {
+         throw new NotFoundError('User not found');
       }
 
       // check products in stock
@@ -254,8 +351,15 @@ class InvoiceService {
          );
       }
 
+      // Apply voucher if provided
+      const voucherResult = await VoucherService.applyVoucher(
+         voucher_code,
+         user._id,
+         total_amount,
+      );
+
       // Create new Invoice with default status = "PENDING"
-      var invoiceProducts = bought_items.map((item) => {
+      const invoiceProducts = bought_items.map((item) => {
          return {
             product_id: new mongoose.Types.ObjectId(item.product_id),
             product_name: item.product_name,
@@ -267,29 +371,57 @@ class InvoiceService {
          };
       });
 
-      const newInvoice = await InvoiceModel.create({
-         invoice_user: new mongoose.Types.ObjectId('664439317954a1ae3c523650'),
-         contact_name: contact_name,
-         contact_phone_number: contact_phone_number,
-         invoice_products: invoiceProducts,
-         invoice_note: '',
-         shipping_address_line: address_line,
-         shipping_address_district: address_district,
-         shipping_address_province: address_province,
-         shipping_address_country: address_country,
-         payment_method: PAYMENT_METHODS.COD,
-         invoice_status: INVOICE_STATUS.PENDING,
-         invoice_total: total_amount,
-      });
+      const session = await mongoose.startSession();
+      session.startTransaction();
 
-      if (!newInvoice) {
-         throw new BadRequestError('Error creating invoice');
+      try {
+         // Create the invoice
+         const newInvoice = await InvoiceModel.create(
+            [
+               {
+                  invoice_user: user._id,
+                  contact_name: contact_name,
+                  contact_phone_number: contact_phone_number,
+                  invoice_products: invoiceProducts,
+                  invoice_note: '',
+                  shipping_address_line: address_line,
+                  shipping_address_district: address_district,
+                  shipping_address_province: address_province,
+                  shipping_address_country: address_country,
+                  payment_method: PAYMENT_METHODS.COD,
+                  invoice_status: INVOICE_STATUS.PENDING,
+                  invoice_total: voucherResult.finalAmount,
+                  original_amount: total_amount,
+                  applied_voucher: voucherResult.voucher,
+               },
+            ],
+            { session },
+         );
+
+         // Update voucher usage if one was applied
+         if (voucherResult.isApplied) {
+            await VoucherService.markVoucherAsUsed(
+               voucherResult.voucher.voucher_id,
+               session,
+            );
+         }
+
+         await session.commitTransaction();
+
+         // Schedule auto-confirmation for this invoice
+         this.scheduleAutoConfirmation(
+            newInvoice[0]._id,
+            newInvoice[0].createdAt,
+         );
+
+         return true;
+      } catch (error) {
+         await session.abortTransaction();
+         console.error('Error creating invoice:', error);
+         throw new BadRequestError(error.message || 'Failed to create invoice');
+      } finally {
+         session.endSession();
       }
-
-      // Schedule auto-confirmation for this invoice
-      this.scheduleAutoConfirmation(newInvoice._id, newInvoice.createdAt);
-
-      return !!newInvoice;
    }
 
    async updateStatus(req) {

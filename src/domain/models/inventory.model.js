@@ -5,24 +5,20 @@ const DOCUMENT_NAME = 'inventory';
 
 const skuSchema = new Schema(
    {
-      sku_size: {
-         type: String,
-         enum: ['S', 'M', 'L', 'XL', '2XL'],
-         required: true,
-      },
       sku_color: {
          type: String,
-         enum: ['Yellow', 'Red', 'Brown', 'Gray', 'Pink', 'White'],
-         required: true,
+         default: '',
       },
-      sku_quantity: {
+      sku_size: {
+         type: String,
+         default: '',
+      },
+      quantity: {
          type: Number,
          default: 0,
       },
    },
-   {
-      timestamps: true,
-   },
+   { _id: false },
 );
 
 const inventorySchema = new Schema(

@@ -5,9 +5,9 @@ const ErrorHandler = require('../infrastructure/utils/catch-error');
 const {
    upload: uploadMiddleware,
 } = require('../middlewares/upload.middleware.js');
+const { grantAccess } = require('../middlewares/rbac.middleware');
 
 const { authenticationMiddleware } = require('../middlewares/auth.middleware');
-
 const userController = require('../controllers/user.controller');
 
 router.use('/', authenticationMiddleware);

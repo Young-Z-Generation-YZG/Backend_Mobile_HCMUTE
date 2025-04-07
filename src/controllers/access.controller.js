@@ -19,6 +19,14 @@ class AccessController {
       }).send(res);
    }
 
+   async refreshToken(req, res) {
+      return new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await AccessService.refreshToken(req),
+      }).send(res);
+   }
+
    async verifyOtpPage(req, res) {
       return new OK({
          message: 'OK',

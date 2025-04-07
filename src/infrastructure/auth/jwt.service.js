@@ -23,6 +23,14 @@ class JwtService {
       };
    };
 
+   verifyJwtToken = (token) => {
+      try {
+         return jwt.verify(token, JWT_SECRET);
+      } catch (error) {
+         return null;
+      }
+   };
+
    generateJwtMailToken = (payload) => {
       const mailToken = jwt.sign(payload, JWT_SECRET, {
          expiresIn: MAILER_TOKEN_EXPIRED_IN,

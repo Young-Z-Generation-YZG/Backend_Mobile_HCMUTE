@@ -6,10 +6,11 @@ const {
    COLORS_ARRAY,
    SIZES_ARRAY,
    PAYMENT_METHODS_ARRAY,
-} = require('../../common/constants/domain');
+   PAYMENT_METHODS,
+} = require('../constants/domain');
 
 const COLLECTION_NAME = 'Invoices';
-const DOCUMENT_NAME = 'invoice';
+const DOCUMENT_NAME = 'Invoice';
 
 const productInvoiceSchema = new Schema({
    product_id: {
@@ -97,18 +98,44 @@ const invoiceSchema = new Schema(
       },
       payment_method: {
          type: String,
-         enum: PAYMENT_METHODS_ARRAY,
-         required: true,
+         enum: Object.values(PAYMENT_METHODS),
+         default: PAYMENT_METHODS.COD,
       },
       invoice_status: {
          type: String,
-         enum: INVOICE_STATUS_ARRAY,
+         enum: Object.values(INVOICE_STATUS),
          default: INVOICE_STATUS.PENDING,
-         required: true,
       },
       invoice_total: {
          type: Number,
-         trim: true,
+         required: true,
+         min: 0,
+      },
+      original_amount: {
+         type: Number,
+         min: 0,
+      },
+      applied_voucher: {
+         voucher_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Voucher',
+         },
+         voucher_code: {
+            type: String,
+            trim: true,
+         },
+         voucher_value: {
+            type: Number,
+         },
+         voucher_type: {
+            type: String,
+            enum: ['PERCENTAGE', 'FIXED_AMOUNT'],
+         },
+         discount_amount: {
+            type: Number,
+            min: 0,
+         },
+         _id: false,
       },
    },
    {

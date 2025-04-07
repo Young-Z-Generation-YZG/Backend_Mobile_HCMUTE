@@ -1,0 +1,90 @@
+[{
+    "_id": {
+      "$oid": "664439317954a1ae3c523650"
+    },
+    "email": "admin@gmail.com",
+    "password": "$2b$10$hcEJEbY5XqD0Fxq9kqoCf.kv8FfcqoQBQnV0CuECjGTzof2S.BsBe",
+    "verified": true,
+    "roles": [
+      {
+        "$oid": "66434c34fd0d76dfa0eee6d8"
+      }
+    ],
+    "user_profile": {
+      "$oid": "664067331c54661949f71eee"
+    },
+    "createdAt": {
+      "$date": "2024-05-15T04:25:21.851Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-16T08:54:31.007Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "6645cf80af463a6f3221b483"
+    },
+    "email": "user@gmail.com",
+    "password": "$2b$10$hcEJEbY5XqD0Fxq9kqoCf.kv8FfcqoQBQnV0CuECjGTzof2S.BsBe",
+    "verified": true,
+    "roles": [
+      {
+        "$oid": "66434d1afd0d76dfa0eee8af"
+      }
+    ],
+    "user_profile": {
+      "$oid": "664439317954a1ae3c52364e"
+    },
+    "createdAt": {
+      "$date": "2024-05-16T09:18:56.814Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-16T09:19:31.404Z"
+    },
+    "__v": 0
+  },
+  {
+    "_id": {
+      "$oid": "664b985341a86b493495f2e5"
+    },
+    "email": "staff@gmail.com",
+    "password": "$2b$10$hcEJEbY5XqD0Fxq9kqoCf.kv8FfcqoQBQnV0CuECjGTzof2S.BsBe",
+    "verified": true,
+    "roles": [
+      {
+        "$oid": "66434c34fd0d76dfa0eee6d8"
+      }
+    ],
+    "user_profile": {
+      "$oid": "6646d53550daf961d0f72f3a"
+    },
+    "createdAt": {
+      "$date": "2024-05-20T18:37:07.017Z"
+    },
+    "updatedAt": {
+      "$date": "2024-05-20T18:37:07.017Z"
+    },
+    "__v": 0
+  },
+  {
+    "email": "foo@gmail.com",
+    "password": "$2b$10$hcEJEbY5XqD0Fxq9kqoCf.kv8FfcqoQBQnV0CuECjGTzof2S.BsBe",
+    "verified": true,
+    "roles": [
+      {
+        "$oid": "66434d1afd0d76dfa0eee8af"
+      }
+    ],
+    "user_profile": {
+      "$oid": "67ef87dd955619090a318e1a"
+    },
+    "createdAt": {
+      "$date": "2025-04-04T07:18:53.085Z"
+    },
+    "updatedAt": {
+      "$date": "2025-04-04T07:18:53.085Z"
+    },
+    "__v": 0
+  }
+]

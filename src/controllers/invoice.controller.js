@@ -58,6 +58,14 @@ class InvoiceController {
          data: await InvoiceService.confirmOrder(req),
       }).send(res);
    }
+
+   async getInvoiceOfUser(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await InvoiceService.getInvoiceOfUser(req),
+      }).send(res);
+   }
 }
 
 module.exports = new InvoiceController();

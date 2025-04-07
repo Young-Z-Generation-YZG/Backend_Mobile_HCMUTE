@@ -65,7 +65,7 @@ router.post('/register', ErrorHandler(AccessController.register));
  *          example: "foo@gmail.com"
  *         password:
  *          type: string
- *          example: "bar"
+ *          example: "user"
  *   responses:
  *    '200':
  *      description: OK
@@ -75,6 +75,38 @@ router.post('/register', ErrorHandler(AccessController.register));
  *         type: object
  */
 router.post('/login', ErrorHandler(AccessController.login));
+
+/**
+ * @swagger
+ * /api/v1/auth/refresh-token:
+ *  post:
+ *   summary: Refresh access token using refresh token
+ *   tags: [Auth]
+ *   requestBody:
+ *    required: true
+ *    content:
+ *     application/json:
+ *      schema:
+ *        type: object
+ *        properties:
+ *         refresh_token:
+ *          type: string
+ *          required: true
+ *          example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
+ *   responses:
+ *    '200':
+ *      description: OK
+ *      content:
+ *       application/json:
+ *        schema:
+ *         type: object
+ *         properties:
+ *          access_token:
+ *           type: string
+ *          refresh_token:
+ *           type: string
+ */
+router.post('/refresh-token', ErrorHandler(AccessController.refreshToken));
 
 // [DONE]
 /**
@@ -94,8 +126,8 @@ router.post('/login', ErrorHandler(AccessController.login));
  *         name: _verify_type
  *         schema:
  *           type: string
- *           enum: [email, resetPassword, changeEmail, changePhoneNumber]
- *         default: email
+ *           enum: [EMAIL, RESET_PASSWORD, CHANGE_EMAIL, CHANGE_PHONE_NUMBER]
+ *         default: EMAIL
  *         required: true
  *     responses:
  *       '200':

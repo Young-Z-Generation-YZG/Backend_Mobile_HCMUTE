@@ -1,0 +1,65 @@
+[{
+  "_id": {
+    "$oid": "664439317954a1ae3c52364c"
+  },
+  "address_country": "Việt Nam",
+  "address_province": "Hồ Chí Minh",
+  "address_district": "Thủ Đức",
+  "address_addressLine": "106* Kha Van Can, Linh Dong, Thu Duc",
+  "createdAt": {
+    "$date": "2024-05-15T04:25:21.846Z"
+  },
+  "updatedAt": {
+    "$date": "2024-05-16T19:42:54.840Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6645cf80af463a6f3221b47f"
+  },
+  "address_country": "Việt Nam",
+  "address_province": "Hồ Chí Minh",
+  "address_district": "Thủ Đức",
+  "address_addressLine": "106* Kha Van Can, Linh Dong, Thu Duc",
+  "createdAt": {
+    "$date": "2024-05-16T09:18:56.808Z"
+  },
+  "updatedAt": {
+    "$date": "2024-05-16T09:53:23.881Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "6646d53550daf961d0f72f3a"
+  },
+  "address_country": "Việt Nam",
+  "address_province": "Hồ Chí Minh",
+  "address_district": "Thủ Đức",
+  "address_addressLine": "106* Kha Van Can, Linh Dong, Thu Duc",
+  "createdAt": {
+    "$date": "2024-05-15T04:25:21.846Z"
+  },
+  "updatedAt": {
+    "$date": "2024-05-16T19:42:54.840Z"
+  },
+  "__v": 0
+},
+{
+  "_id": {
+    "$oid": "67ef87dd955619090a318e18"
+  },
+  "address_country": "",
+  "address_province": "",
+  "address_district": "",
+  "address_addressLine": "",
+  "createdAt": {
+    "$date": "2024-05-15T04:25:21.846Z"
+  },
+  "updatedAt": {
+    "$date": "2024-05-16T19:42:54.840Z"
+  },
+  "__v": 0
+}
+]
