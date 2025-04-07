@@ -86,14 +86,14 @@ class AccessService {
       if (!existUser.verified) {
          const payload = {
             email: existUser.email,
-            verify_type: VERIFY_TYPE.EMAIL,
+            verify_type: VERIFY_TYPES.EMAIL,
          };
 
          const jwtMailToken = JwtService.generateJwtMailToken(payload);
 
          const params = {
             _q: jwtMailToken,
-            _verify_type: VERIFY_TYPE.EMAIL,
+            _verify_type: VERIFY_TYPES.EMAIL,
          };
 
          const encodedUrl = generateEncodedUrl(
@@ -115,8 +115,9 @@ class AccessService {
          JwtService.generateTokenPair(payload);
 
       return {
-         accessToken,
-         refreshToken,
+         access_token: accessToken,
+         refresh_token: refreshToken,
+         expired_in: 300,
       };
    }
 
@@ -142,7 +143,7 @@ class AccessService {
       }
 
       // Reset password situation
-      if (verify_type === VERIFY_TYPE.RESET_PASSWORD && !able_to_verify) {
+      if (verify_type === VERIFY_TYPES.RESET_PASSWORD && !able_to_verify) {
          throw new AuthenticationError('Not permitted to access');
       }
 
@@ -175,7 +176,7 @@ class AccessService {
       const mailOtp = OtpService.generateOtp(6);
 
       if (
-         _verify_type === VERIFY_TYPE.EMAIL &&
+         _verify_type === VERIFY_TYPES.EMAIL &&
          decodedToken.verify_type == _verify_type
       ) {
          await MailerService.sendEmailVerify({
@@ -185,11 +186,11 @@ class AccessService {
          });
 
          await RedisService.set(
-            `${emailPayload}:${VERIFY_TYPE.EMAIL}`,
+            `${emailPayload}:${VERIFY_TYPES.EMAIL}`,
             mailOtp,
          );
       } else if (
-         _verify_type === VERIFY_TYPE.CHANGE_PHONE_NUMBER &&
+         _verify_type === VERIFY_TYPES.CHANGE_PHONE_NUMBER &&
          decodedToken.verify_type == _verify_type
       ) {
          await MailerService.sendEmailChangePhoneNumber({
@@ -199,11 +200,11 @@ class AccessService {
          });
 
          await RedisService.set(
-            `${emailPayload}:${VERIFY_TYPE.CHANGE_PHONE_NUMBER}`,
+            `${emailPayload}:${VERIFY_TYPES.CHANGE_PHONE_NUMBER}`,
             mailOtp,
          );
       } else if (
-         _verify_type === VERIFY_TYPE.RESET_PASSWORD &&
+         _verify_type === VERIFY_TYPES.RESET_PASSWORD &&
          decodedToken.verify_type == _verify_type
       ) {
          await MailerService.sendEmailResetPasswordWithOtp({
@@ -213,7 +214,7 @@ class AccessService {
          });
 
          await RedisService.set(
-            `${emailPayload}:${VERIFY_TYPE.RESET_PASSWORD}`,
+            `${emailPayload}:${VERIFY_TYPES.RESET_PASSWORD}`,
             mailOtp,
          );
       } else {
@@ -243,7 +244,7 @@ class AccessService {
       const { email: emailPayload } = decodedToken;
 
       const redisMailOtp = await RedisService.get(
-         `${emailPayload}:${VERIFY_TYPE.EMAIL}`,
+         `${emailPayload}:${VERIFY_TYPES.EMAIL}`,
       );
 
       if (otp != redisMailOtp) {
@@ -273,7 +274,7 @@ class AccessService {
       const { email: emailPayload } = decodedToken;
 
       const redisMailOtp = await RedisService.get(
-         `${emailPayload}:${VERIFY_TYPE.CHANGE_PHONE_NUMBER}`,
+         `${emailPayload}:${VERIFY_TYPES.CHANGE_PHONE_NUMBER}`,
       );
 
       const changedPhoneNumber = await RedisService.get(
@@ -310,7 +311,7 @@ class AccessService {
 
       const payload = {
          email: user.email,
-         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         verify_type: VERIFY_TYPES.RESET_PASSWORD,
          update_field: 'confirmPassword',
       };
 
@@ -318,7 +319,7 @@ class AccessService {
 
       const params = {
          _q: jwtMailToken,
-         _verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         _verify_type: VERIFY_TYPES.RESET_PASSWORD,
       };
 
       const encodedUrl = generateEncodedUrl(
@@ -383,7 +384,7 @@ class AccessService {
 
       const payload = {
          email: emailPayload,
-         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         verify_type: VERIFY_TYPES.RESET_PASSWORD,
          update_field: update_field,
          able_to_verify: true,
       };
@@ -392,7 +393,7 @@ class AccessService {
 
       const params = {
          _q: newJwtMail,
-         verify_type: VERIFY_TYPE.RESET_PASSWORD,
+         verify_type: VERIFY_TYPES.RESET_PASSWORD,
       };
 
       const encodedUrl = generateEncodedUrl('api/v1/auth/otp-verify', params);
@@ -402,6 +403,7 @@ class AccessService {
       };
    }
 
+   // [POST] /verify-reset-password
    async verifyResetPassword(req) {
       const { q, otp } = req.body;
 
@@ -418,7 +420,7 @@ class AccessService {
       const { email, update_field } = decodedToken;
 
       const redisOtp = await RedisService.get(
-         `${email}:${VERIFY_TYPE.RESET_PASSWORD}`,
+         `${email}:${VERIFY_TYPES.RESET_PASSWORD}`,
       );
       const confirmPassword = await RedisService.get(
          `${email}:${update_field}`,
@@ -436,6 +438,58 @@ class AccessService {
       );
 
       return !!updateResult;
+   }
+
+   // [POST] /refresh-token
+   async refreshToken(req) {
+      // Get refresh token from request
+      const { refresh_token } = req.body;
+
+      if (!refresh_token) {
+         throw new BadRequestError('Refresh token is required');
+      }
+
+      // Verify refresh token
+      try {
+         // Verify and decode the refresh token
+         const decoded = JwtService.verifyJwtToken(refresh_token);
+
+         if (!decoded) {
+            throw new AuthenticationError('Invalid refresh token');
+         }
+
+         // Check if user exists
+         const user = await UserService.findOneByEmail(decoded.email);
+
+         if (!user) {
+            throw new BadRequestError('User not found');
+         }
+
+         if (!user.verified) {
+            throw new AuthenticationError('User not verified');
+         }
+
+         // Generate new token pair
+         const payload = {
+            email: user.email,
+         };
+
+         const { accessToken, refreshToken } =
+            JwtService.generateTokenPair(payload);
+
+         return {
+            access_token: accessToken,
+            expired_in: 300,
+         };
+      } catch (error) {
+         if (error.name === 'TokenExpiredError') {
+            throw new AuthenticationError('Refresh token expired');
+         }
+         if (error.name === 'JsonWebTokenError') {
+            throw new AuthenticationError('Invalid refresh token');
+         }
+         throw error;
+      }
    }
 }
 

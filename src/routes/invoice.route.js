@@ -342,6 +342,9 @@ router.get('/user', ErrorHandler(InvoiceController.getInvoiceOfUser));
  *          type: array
  *          example: [{"product_id":"6646a822529494b708d5a23b","product_name": "Apple Cinnam Pants","product_color":"GREEN","product_size":"S","product_image": "https://res.cloudinary.com/djiju7xcq/image/upload/v1729840556/Apple-Cinnam-Pants-1-690x884_wgabxx.jpg","product_price": 200,"quantity":1}]
  *          required: true
+ *         voucher_code:
+ *          type: string
+ *          example: null
  *         total_amount:
  *          type: number
  *          example: 200

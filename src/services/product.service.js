@@ -4,7 +4,10 @@ const productModel = require('../domain/models/product.model');
 const {
    minimumCloudinaryImg,
 } = require('../infrastructure/utils/minimum-cloudinary-img');
-const { BadRequestError } = require('../domain/core/error.response'); // Assuming you have this
+const {
+   BadRequestError,
+   NotFoundError,
+} = require('../domain/core/error.response');
 const InventoryService = require('../services/inventory.service');
 
 class ProductService {
@@ -24,6 +27,7 @@ class ProductService {
          _product_brand, // e.g., "Nike"
          _min_price, // e.g., 10
          _max_price, // e.g., 50
+         _has_promotion, // e.g., true/false
       } = req.query;
 
       // Validate pagination inputs
@@ -107,6 +111,14 @@ class ProductService {
          }
       }
 
+      // Filter products by active promotions
+      if (_has_promotion === 'true') {
+         const now = new Date();
+         query['product_promotion.promotion_id'] = { $ne: null };
+         query['product_promotion.start_date'] = { $lte: now };
+         query['product_promotion.end_date'] = { $gt: now };
+      }
+
       try {
          // Get total count for pagination metadata
          const totalItems = await productModel.countDocuments(query);
@@ -127,13 +139,8 @@ class ProductService {
             })
             .populate({
                path: 'product_promotion.promotion_id',
-               model: 'Promotion',
-               match: {
-                  promotion_start_date: { $lte: new Date() },
-                  promotion_end_date: { $gt: new Date() },
-               },
                select:
-                  'promotion_name promotion_value promotion_start_date promotion_end_date is_active',
+                  'promotion_name promotion_value promotion_start_date promotion_end_date',
             })
             .sort(sortObj)
             .skip(skip)
@@ -143,12 +150,39 @@ class ProductService {
          // Calculate pagination metadata
          const totalPages = Math.ceil(totalItems / limit);
 
-         // Process images
+         // Process images and handle promotions
+         const now = new Date();
          const finalData = products.map((p) => {
             const images = minimumCloudinaryImg(p.product_imgs);
+
+            // Check if promotion is active
+            let hasActivePromotion = false;
+            let discountedPrice = p.product_price;
+
+            if (p.product_promotion && p.product_promotion.promotion_id) {
+               const { start_date, end_date, current_discount } =
+                  p.product_promotion;
+
+               if (
+                  start_date &&
+                  end_date &&
+                  start_date <= now &&
+                  end_date > now
+               ) {
+                  hasActivePromotion = true;
+                  const discountAmount =
+                     (p.product_price * current_discount) / 100;
+                  discountedPrice = p.product_price - discountAmount;
+               }
+            }
+
             return {
                ...p,
                product_imgs: images,
+               has_promotion: hasActivePromotion,
+               final_price: hasActivePromotion
+                  ? discountedPrice
+                  : p.product_price,
             };
          });
 
@@ -176,11 +210,8 @@ class ProductService {
          .populate('product_category')
          .populate({
             path: 'product_promotion.promotion_id',
-            model: 'Promotion',
-            match: {
-               start_date: { $lte: new Date() },
-               end_date: { $gt: new Date() },
-            },
+            select:
+               'promotion_name promotion_value promotion_start_date promotion_end_date',
          });
 
       if (!product) {
@@ -189,10 +220,36 @@ class ProductService {
 
       product.product_imgs = minimumCloudinaryImg(product.product_imgs);
 
+      // Check if promotion is active
+      const now = new Date();
+      let hasActivePromotion = false;
+      let discountedPrice = product.product_price;
+      let promotionInfo = null;
+
+      if (product.product_promotion && product.product_promotion.promotion_id) {
+         const { start_date, end_date, current_discount } =
+            product.product_promotion;
+
+         if (start_date && end_date && start_date <= now && end_date > now) {
+            hasActivePromotion = true;
+            const discountAmount =
+               (product.product_price * current_discount) / 100;
+            discountedPrice = product.product_price - discountAmount;
+
+            promotionInfo = {
+               name: product.product_promotion.promotion_id.promotion_name,
+               discount_percentage: current_discount,
+               discount_amount: discountAmount,
+               start_date,
+               end_date,
+            };
+         }
+      }
+
       const filtersInventory = {
          'sku.sku_size': 1,
          'sku.sku_color': 1,
-         'sku.sku_quantity': 1,
+         'sku.quantity': 1,
          _id: 0,
       };
 
@@ -211,6 +268,11 @@ class ProductService {
       const result = {
          ...product.toObject(),
          skus: [...flat],
+         has_promotion: hasActivePromotion,
+         final_price: hasActivePromotion
+            ? discountedPrice
+            : product.product_price,
+         promotion: promotionInfo,
       };
 
       return result;

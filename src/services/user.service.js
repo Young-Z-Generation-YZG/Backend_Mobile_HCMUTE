@@ -19,7 +19,7 @@ const addressModel = require('../domain/models/address.model');
 const reviewModel = require('../domain/models/review.model');
 const productModel = require('../domain/models/product.model');
 const InvoiceModel = require('../domain/models/invoice.model');
-const { VERIFY_TYPE } = require('../domain/constants/domain');
+const { VERIFY_TYPES } = require('../domain/constants/domain');
 
 class UserService {
    // [DONE]
@@ -343,14 +343,14 @@ class UserService {
 
          const jwtPayload = {
             email: user.email,
-            verify_type: VERIFY_TYPE.CHANGE_PHONE_NUMBER,
+            verify_type: VERIFY_TYPES.CHANGE_PHONE_NUMBER,
          };
 
          const q = JwtService.generateJwtMailToken(jwtPayload);
 
          const params = {
             _q: q,
-            _verify_type: VERIFY_TYPE.CHANGE_PHONE_NUMBER,
+            _verify_type: VERIFY_TYPES.CHANGE_PHONE_NUMBER,
          };
 
          const encodedUrl = generateEncodedUrl(

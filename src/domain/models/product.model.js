@@ -83,6 +83,28 @@ const productSchema = new Schema(
          type: Number,
          default: 0,
       },
+      product_promotion: {
+         promotion_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Promotion',
+            default: null,
+         },
+         current_discount: {
+            type: Number,
+            min: 0,
+            max: 100,
+            default: 0,
+         },
+         start_date: {
+            type: Date,
+            default: null,
+         },
+         end_date: {
+            type: Date,
+            default: null,
+         },
+         _id: false,
+      },
       product_slug: {
          type: String,
          slug: 'product_name',

@@ -1,6 +1,67 @@
 [
     {
         "_id": {
+            "$oid": "6646de929e38115a4abcda9b"
+        },
+        "inventory_product": {
+            "$oid": "66468e5e529494b708d5909a"
+        },
+        "sku": {
+        "sku_color": "YELLOW",
+        "sku_size": "S",
+        "quantity": 100
+        },
+        "createdAt": {
+            "$date": "2024-05-14T18:51:30.483Z"
+        },
+        "updatedAt": {
+            "$date": "2024-05-14T18:56:53.599Z"
+        },
+        "__v": 0
+    },
+    {
+        "_id": {
+            "$oid": "6646a99150daf961d0f72d27"
+        },
+        "inventory_product": {
+            "$oid": "66468e5e529494b708d5909a"
+        },
+        "sku": {
+        "sku_color": "YELLOW",
+        "sku_size": "M",
+        "quantity": 100
+        },
+        "createdAt": {
+            "$date": "2024-05-14T18:51:30.483Z"
+        },
+        "updatedAt": {
+            "$date": "2024-05-14T18:56:53.599Z"
+        },
+        "__v": 0
+    },
+    {
+        "_id": {
+            "$oid": "6646a8e050daf961d0f72d13"
+        },
+        "inventory_product": {
+            "$oid": "66468e5e529494b708d5909a"
+        },
+        "sku": {
+        "sku_color": "YELLOW",
+        "sku_size": "L",
+        "quantity": 100
+        },
+        "createdAt": {
+            "$date": "2024-05-14T18:51:30.483Z"
+        },
+        "updatedAt": {
+            "$date": "2024-05-14T18:56:53.599Z"
+        },
+        "__v": 0
+    },
+
+    {
+        "_id": {
             "$oid": "6643b2b2fd0d76dfa0ef1ed7"
         },
         "inventory_product": {

@@ -6,41 +6,84 @@ const invoiceModel = require('../domain/models/invoice.model');
 const reviewModel = require('../domain/models/review.model');
 const userModel = require('../domain/models/user.model');
 const productModel = require('../domain/models/product.model');
+const VoucherService = require('./voucher.service');
 const { INVOICE_STATUS } = require('../domain/constants/domain');
 const mongoose = require('mongoose');
+const crypto = require('crypto');
 
 class ReviewService {
    async getAllByProductId(req) {
       const { productId } = req.params;
+      const {
+         _page = 1,
+         _limit = 10,
+         _star,
+         _sortBy = 'createdAt',
+      } = req.query;
 
       // Validate product ID format
       if (!productId || !productId.match(/^[0-9a-fA-F]{24}$/)) {
          throw new BadRequestError('Invalid product ID');
       }
 
+      // Convert pagination params to numbers
+      const page = parseInt(_page);
+      const limit = parseInt(_limit);
+      const skip = (page - 1) * limit;
+
+      // Validate pagination params
+      if (isNaN(page) || page < 1) {
+         throw new BadRequestError('Page must be a positive number');
+      }
+
+      if (isNaN(limit) || limit < 1) {
+         throw new BadRequestError('Limit must be a positive number');
+      }
+
+      // Build query
+      const query = { review_product: productId };
+
+      // Add star filter if specified
+      if (_star && !isNaN(parseInt(_star))) {
+         const star = parseInt(_star);
+         if (star >= 1 && star <= 5) {
+            query.review_rating = star;
+         }
+      }
+
+      // Set sort options based on _sortBy parameter
+      let sortOptions = {};
+      if (_sortBy === 'star' || _sortBy === 'review_rating') {
+         sortOptions = { review_rating: -1, createdAt: -1 }; // Sort by rating (high to low) then by date
+      } else {
+         sortOptions = { createdAt: -1 }; // Default: sort by newest first
+      }
+
       // Find all reviews for this product and populate user information
       const reviews = await reviewModel
-         .find({ review_product: productId })
+         .find(query)
          .populate({
             path: 'review_user',
             select: 'email profile_firstName profile_lastName profile_img',
          })
-         .sort({ createdAt: -1 }); // Sort by newest first
+         .sort(sortOptions) // Use dynamic sort options
+         .skip(skip)
+         .limit(limit)
+         .lean();
 
       // Calculate average rating
       const totalReviews = reviews.length;
-      const averageRating =
-         totalReviews > 0
-            ? reviews.reduce((sum, review) => sum + review.review_rating, 0) /
-              totalReviews
-            : 0;
+
+      const totalPages = Math.ceil(totalReviews / limit);
 
       // Format the response
       return {
          reviews,
-         metadata: {
-            total: totalReviews,
-            averageRating: parseFloat(averageRating.toFixed(1)),
+         meta: {
+            totalItems: totalReviews,
+            totalPages,
+            currentPage: page,
+            itemsPerPage: limit,
          },
       };
    }
@@ -65,7 +108,7 @@ class ReviewService {
       const userInvoices = await invoiceModel.find({
          invoice_user: user._id,
          'invoice_products.product_id': productId,
-         invoice_status: INVOICE_STATUS.DELIVERED, // Assuming you only want to allow reviews for delivered products
+         invoice_status: INVOICE_STATUS.DELIVERED, // Allow reviews only for delivered products
       });
 
       if (!userInvoices || userInvoices.length === 0) {
@@ -74,20 +117,32 @@ class ReviewService {
          );
       }
 
-      // 3. Check if user has already reviewed this product
-      const existingReview = await reviewModel.findOne({
-         review_user: user._id,
-         review_product: productId,
-      });
+      // Find invoices that have not been reviewed yet
+      const reviewedInvoices = await reviewModel
+         .find({
+            review_user: user._id,
+            review_product: productId,
+         })
+         .select('review_invoice');
 
-      if (existingReview) {
-         throw new BadRequestError('You have already reviewed this product');
+      const reviewedInvoiceIds = reviewedInvoices.map((review) =>
+         review.review_invoice.toString(),
+      );
+
+      const availableInvoices = userInvoices.filter(
+         (invoice) => !reviewedInvoiceIds.includes(invoice._id.toString()),
+      );
+
+      if (availableInvoices.length === 0) {
+         throw new BadRequestError(
+            'You have already reviewed this product for all your purchases',
+         );
       }
 
-      // 4. Create the review using the invoice ID from the most recent purchase
-      const latestInvoice = userInvoices[userInvoices.length - 1];
+      // 4. Create the review using the invoice ID from the oldest non-reviewed purchase
+      const invoiceToReview = availableInvoices[0];
 
-      // Use a session to ensure both operations (review creation and product update) succeed or fail together
+      // Use a session to ensure all operations succeed or fail together
       const session = await mongoose.startSession();
       session.startTransaction();
 
@@ -98,9 +153,10 @@ class ReviewService {
                {
                   review_user: user._id,
                   review_product: productId,
-                  review_invoice: latestInvoice._id,
+                  review_invoice: invoiceToReview._id,
                   review_content: content,
                   review_rating: review_rating,
+                  voucher_generated: false,
                },
             ],
             { session },
@@ -148,6 +204,24 @@ class ReviewService {
                      { star: 4, star_count: starCounts[3] },
                      { star: 5, star_count: starCounts[4] },
                   ],
+               },
+            },
+            { session },
+         );
+
+         // 6. Generate a voucher for the user as a reward for the review using VoucherService
+         const voucher = await VoucherService.generateReviewVoucher(
+            user,
+            newReview[0]._id,
+         );
+
+         // Update the review to reference the generated voucher
+         await reviewModel.findByIdAndUpdate(
+            newReview[0]._id,
+            {
+               $set: {
+                  voucher_generated: true,
+                  voucher_id: voucher._id,
                },
             },
             { session },

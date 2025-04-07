@@ -18,7 +18,7 @@ const { authenticationMiddleware } = require('../middlewares/auth.middleware');
  * /api/v1/reviews/{productId}:
  *   get:
  *     summary: Get all reviews of a product
- *     description: Retrieves all reviews for a specific product
+ *     description: Retrieves reviews for a specific product with pagination and filtering options
  *     tags: [Review]
  *     parameters:
  *       - in: path
@@ -28,6 +28,38 @@ const { authenticationMiddleware } = require('../middlewares/auth.middleware');
  *         schema:
  *           type: string
  *           example: "507f1f77bcf86cd799439011"
+ *       - in: query
+ *         name: _page
+ *         description: Page number (default is 1)
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *           example: 1
+ *       - in: query
+ *         name: _limit
+ *         description: Number of reviews per page (default is 10)
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 10
+ *           example: 10
+ *       - in: query
+ *         name: _star
+ *         description: Filter reviews by star rating (1-5)
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 5
+ *           example: 5
+ *       - in: query
+ *         name: _sortBy
+ *         description: Sort reviews by creation date or star rating
+ *         schema:
+ *           type: string
+ *           enum: [createdAt, star]
+ *           default: createdAt
+ *           example: createdAt
  *     responses:
  *       '200':
  *         description: OK
@@ -35,6 +67,24 @@ const { authenticationMiddleware } = require('../middlewares/auth.middleware');
  *           application/json:
  *             schema:
  *               type: object
+ *               properties:
+ *                 reviews:
+ *                   type: array
+ *                   items:
+ *                     type: object
+ *                 meta:
+ *                   type: object
+ *                   properties:
+ *                     totalItems:
+ *                       type: integer
+ *                     totalPages:
+ *                       type: integer
+ *                     currentPage:
+ *                       type: integer
+ *                     itemsPerPage:
+ *                       type: integer
+ *                     sortBy:
+ *                       type: string
  */
 router.get('/:productId', ErrorHandler(ReviewController.getAllByProductId));
 
