@@ -72,6 +72,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.112Z"
   },
@@ -132,7 +133,7 @@
   "product_type": "clothe",
   "product_gender": "woman",
   "product_brand": "gucci",
-  "product_price": 85,
+  "product_price": 150,
   "product_slug": "dust-lightweight-jacket",
   "product_status": "PUBLISHED",
   "average_rating": {
@@ -161,6 +162,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.208Z"
   },
@@ -207,7 +209,7 @@
   "product_type": "clothe",
   "product_gender": "woman",
   "product_brand": "chanel",
-  "product_price": 79,
+  "product_price": 120,
   "product_slug": "dark-olive-short-dress",
   "product_status": "PUBLISHED",
   "average_rating": {
@@ -236,6 +238,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.290Z"
   },
@@ -310,6 +313,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.376Z"
   },
@@ -385,6 +389,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.457Z"
   },
@@ -431,7 +436,7 @@
   "product_type": "clothe",
   "product_gender": "woman",
   "product_brand": "Chanel",
-  "product_price": 20,
+  "product_price": 200,
   "product_slug": "apple-cinnam-pants",
   "product_status": "PUBLISHED",
   "average_rating": {
@@ -460,6 +465,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.540Z"
   },
@@ -535,6 +541,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.622Z"
   },
@@ -610,6 +617,7 @@
       "star_count": 0
     }
   ],
+  "product_promotion": null,
   "createdAt": {
     "$date": "2025-04-04T08:06:36.701Z"
   },

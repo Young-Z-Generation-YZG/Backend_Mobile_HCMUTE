@@ -89,6 +89,11 @@ const productSchema = new Schema(
             ref: 'Promotion',
             default: null,
          },
+         promotion_name: {
+            type: String,
+            default: '',
+            trim: true,
+         },
          current_discount: {
             type: Number,
             min: 0,

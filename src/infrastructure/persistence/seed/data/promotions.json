@@ -1,0 +1,25 @@
+[
+    {
+        "_id": {
+            "$oid": "673837eecaae94494c4ae174"
+        },
+        "promotion_name": "Summer Sale 2025",
+        "promotion_value": 20,
+        "promotion_start_date": {
+          "$date": "2025-03-01T00:00:00.000Z"
+        },
+        "promotion_end_date": {
+          "$date": "2025-07-30T23:59:59.999Z"
+        },
+        "category_id": {
+          "$oid": "6643585335e84033bbd0e6d4"
+        },
+        "createdAt": {
+          "$date": "2025-04-07T15:09:04.627Z"
+        },
+        "updatedAt": {
+          "$date": "2025-04-07T15:09:04.627Z"
+        },
+        "__v": 0
+      }
+]

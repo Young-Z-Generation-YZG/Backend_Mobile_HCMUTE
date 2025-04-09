@@ -278,6 +278,16 @@ class ProductService {
       return result;
    };
 
+   getById = async (id) => {
+      let product = await productModel.findById(id);
+
+      if (!product) {
+         throw new NotFoundError('Product not found');
+      }
+
+      return product;
+   };
+
    // [GET] /api/v1/products/best-sellers (unchanged)
    getBestSellers = async (limit = 10) => {
       // Your existing code remains unchanged

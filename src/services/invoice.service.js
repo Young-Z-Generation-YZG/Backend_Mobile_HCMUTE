@@ -17,6 +17,7 @@ const {
    NotFoundError,
 } = require('../domain/core/error.response');
 const { default: mongoose } = require('mongoose');
+const { isNull } = require('lodash');
 
 class InvoiceService {
    constructor() {
@@ -299,7 +300,6 @@ class InvoiceService {
          address_province,
          address_country,
          payment_method,
-         total_amount,
          voucher_code,
       } = req.body;
 
@@ -313,20 +313,22 @@ class InvoiceService {
 
       // Find user by email
       const user = await mongoose.model('User').findOne({ email }).lean();
-
       if (!user) {
          throw new NotFoundError('User not found');
       }
 
-      // check products in stock
+      // check products in stock and get promotion info
+      let totalAmount = 0;
+      const processedItems = [];
+
       for (const product of bought_items) {
-         const {
-            product_id,
-            product_name,
-            product_color,
-            product_size,
-            quantity,
-         } = product;
+         const { product_id, product_color, product_size, quantity } = product;
+
+         if (isNaN(quantity) || quantity < 0) {
+            throw new BadRequestError(
+               `Invalid quantity for product ${product_name}`,
+            );
+         }
 
          const inventory = await InventoryService.getByProductVariants(
             product_id,
@@ -342,6 +344,52 @@ class InvoiceService {
                `Not enough stock for product ${product_name}`,
             );
          }
+
+         // Get product details including promotion
+         const productDetails = await ProductService.getById(product_id);
+
+         let itemTotalPrice = productDetails.product_price * product.quantity;
+         let itemSubTotal = itemTotalPrice;
+         let promotionInfo = null;
+         let itemDiscountPrice = null;
+         const itemPromotion = productDetails.product_promotion;
+
+         // Check for active category promotion
+         if (!(itemPromotion.promotion_id === undefined)) {
+            const discountPercentage =
+               productDetails.product_promotion.current_discount;
+
+            const discountAmount = (
+               (productDetails.product_price * discountPercentage) /
+               100
+            ).toFixed(2);
+
+            itemDiscountPrice = productDetails.product_price - discountAmount;
+
+            promotionInfo = {
+               promotion_id: productDetails.product_promotion.promotion_id,
+               promotion_name:
+                  productDetails.product_promotion.promotion_name || '',
+               discount_percentage: discountPercentage,
+               discount_amount: discountAmount,
+            };
+
+            totalAmount += itemTotalPrice - discountAmount * quantity;
+
+            itemSubTotal = itemTotalPrice - discountAmount * quantity;
+         } else {
+            totalAmount += itemTotalPrice;
+         }
+
+         processedItems.push({
+            ...product,
+            product_name: productDetails.product_name,
+            product_image: productDetails.product_imgs[0].secure_url,
+            product_price: productDetails.product_price,
+            product_sub_total_price: itemSubTotal,
+            final_price: itemTotalPrice,
+            promotion: promotionInfo,
+         });
       }
 
       // Check payment method (e.g., COD, VNPAY)
@@ -352,14 +400,20 @@ class InvoiceService {
       }
 
       // Apply voucher if provided
-      const voucherResult = await VoucherService.applyVoucher(
-         voucher_code,
-         user._id,
-         total_amount,
-      );
+      let voucherResult = null;
+      if (voucher_code) {
+         console.log('voucher_code', voucher_code);
+
+         voucherResult = await VoucherService.applyVoucher(
+            voucher_code,
+            user._id,
+            totalAmount,
+         );
+      }
+      console.log('voucherResult', voucherResult);
 
       // Create new Invoice with default status = "PENDING"
-      const invoiceProducts = bought_items.map((item) => {
+      const invoiceProducts = processedItems.map((item) => {
          return {
             product_id: new mongoose.Types.ObjectId(item.product_id),
             product_name: item.product_name,
@@ -367,7 +421,10 @@ class InvoiceService {
             product_color: item.product_color,
             product_image: item.product_image,
             product_price: item.product_price,
+            product_sub_total_price: item.product_sub_total_price,
+            final_price: item.final_price,
             quantity: item.quantity,
+            promotion: item.promotion,
          };
       });
 
@@ -390,16 +447,17 @@ class InvoiceService {
                   shipping_address_country: address_country,
                   payment_method: PAYMENT_METHODS.COD,
                   invoice_status: INVOICE_STATUS.PENDING,
-                  invoice_total: voucherResult.finalAmount,
-                  original_amount: total_amount,
-                  applied_voucher: voucherResult.voucher,
+                  invoice_total: voucherResult
+                     ? voucherResult.finalAmount
+                     : totalAmount,
+                  applied_voucher: voucherResult ? voucherResult.voucher : null,
                },
             ],
             { session },
          );
 
          // Update voucher usage if one was applied
-         if (voucherResult.isApplied) {
+         if (voucherResult && voucherResult.isApplied) {
             await VoucherService.markVoucherAsUsed(
                voucherResult.voucher.voucher_id,
                session,

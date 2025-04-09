@@ -83,18 +83,6 @@ class VoucherService {
          throw new BadRequestError('Used or expired voucher code');
       }
 
-      // Check if voucher is valid using the model method
-      if (!voucher.isValid()) {
-         throw new BadRequestError('Voucher has expired or has been used up');
-      }
-
-      // Check minimum order value
-      if (orderAmount < voucher.voucher_min_order_value) {
-         throw new BadRequestError(
-            `Order amount must be at least ${voucher.voucher_min_order_value} to use this voucher`,
-         );
-      }
-
       // Calculate discount
       let discountAmount = 0;
 

@@ -46,6 +46,33 @@ const productInvoiceSchema = new Schema({
       type: Number,
       required: true,
    },
+   product_sub_total_price: {
+      type: Number,
+      required: true,
+   },
+   promotion: {
+      type: {
+         promotion_id: {
+            type: Schema.Types.ObjectId,
+            ref: 'Promotion',
+         },
+         promotion_name: {
+            type: String,
+         },
+         discount_percentage: {
+            type: Number,
+            min: 0,
+            max: 100,
+         },
+         discount_amount: {
+            type: Number,
+            min: 0,
+         },
+         _id: false,
+      },
+      required: false,
+      default: null,
+   },
 });
 
 productInvoiceSchema.remove('_id');
@@ -109,10 +136,6 @@ const invoiceSchema = new Schema(
       invoice_total: {
          type: Number,
          required: true,
-         min: 0,
-      },
-      original_amount: {
-         type: Number,
          min: 0,
       },
       applied_voucher: {

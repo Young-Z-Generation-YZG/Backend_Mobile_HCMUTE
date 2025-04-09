@@ -29,6 +29,22 @@ class PromotionService {
          throw new NotFoundError('Category not found');
       }
 
+      // Check for existing active promotions for this category
+      const existingPromotion = await promotionModel.findOne({
+         category_id: categoryId,
+         promotion_end_date: { $gt: new Date() },
+      });
+
+      if (existingPromotion) {
+         throw new BadRequestError(
+            `Category already has an active promotion "${existingPromotion.promotion_name}" ` +
+               `that ends on ${new Date(
+                  existingPromotion.promotion_end_date,
+               ).toLocaleDateString()}. ` +
+               `Please edit the existing promotion or wait until it expires.`,
+         );
+      }
+
       // Use a transaction to ensure consistency
       const session = await mongoose.startSession();
       session.startTransaction();
@@ -61,7 +77,7 @@ class PromotionService {
          await this.updateProductsPromotions(promotion[0], categoryId, session);
 
          await session.commitTransaction();
-         return promotion[0];
+         return true;
       } catch (error) {
          await session.abortTransaction();
          console.error('Error creating promotion:', error);
@@ -212,8 +228,26 @@ class PromotionService {
             throw new NotFoundError('Promotion not found');
          }
 
-         // If category is changing, remove promotion from old category
+         // If category is changing, check if the new category already has an active promotion
          if (categoryId !== promotion.category_id.toString()) {
+            // Check for existing active promotions for the new category
+            const existingPromotion = await promotionModel.findOne({
+               category_id: categoryId,
+               promotion_end_date: { $gt: new Date() },
+               _id: { $ne: id }, // Exclude the current promotion being updated
+            });
+
+            if (existingPromotion) {
+               throw new BadRequestError(
+                  `Category already has an active promotion "${existingPromotion.promotion_name}" ` +
+                     `that ends on ${new Date(
+                        existingPromotion.promotion_end_date,
+                     ).toLocaleDateString()}. ` +
+                     `Please edit the existing promotion or wait until it expires.`,
+               );
+            }
+
+            // Remove promotion from old category
             await categoryModel.findByIdAndUpdate(
                promotion.category_id,
                { $unset: { category_promotion: '' } },
@@ -340,12 +374,15 @@ class PromotionService {
       const allCategories = await this.getAllSubcategories(categoryId);
       allCategories.push(categoryId); // Include the parent category
 
+      console.log('promotion.name', promotion.name);
+
       // Update all products in the category and its subcategories
       await productModel.updateMany(
          { product_category: { $in: allCategories } },
          {
             product_promotion: {
                promotion_id: promotion._id,
+               promotion_name: promotion.name || 'empty',
                current_discount: promotion.promotion_value,
                start_date: promotion.promotion_start_date,
                end_date: promotion.promotion_end_date,

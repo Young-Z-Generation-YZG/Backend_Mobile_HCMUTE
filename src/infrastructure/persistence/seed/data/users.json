@@ -68,6 +68,9 @@
     "__v": 0
   },
   {
+    "_id": {
+      "$oid": "67ef97148a53ddabeb422b6e"
+    },
     "email": "foo@gmail.com",
     "password": "$2b$10$hcEJEbY5XqD0Fxq9kqoCf.kv8FfcqoQBQnV0CuECjGTzof2S.BsBe",
     "verified": true,
