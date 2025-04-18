@@ -355,4 +355,106 @@ router.get('/user', ErrorHandler(InvoiceController.getInvoiceOfUser));
  */
 router.post('/', ErrorHandler(InvoiceController.create));
 
+/**
+ * @swagger
+ * /api/v1/invoices/revenues:
+ *   get:
+ *     summary: Get monthly revenue statistics
+ *     description: Retrieves revenue statistics for delivered orders within a specified month range
+ *     tags: [Invoice]
+ *     parameters:
+ *       - in: query
+ *         name: _monthFrom
+ *         schema:
+ *           type: string
+ *           pattern: '^(0[1-9]|1[0-2])$'
+ *         description: Starting month (01-12)
+ *         example: "05"
+ *       - in: query
+ *         name: _monthTo
+ *         schema:
+ *           type: string
+ *           pattern: '^(0[1-9]|1[0-2])$'
+ *         description: Ending month (01-12)
+ *         example: "10"
+ *       - in: query
+ *         name: _year
+ *         schema:
+ *           type: string
+ *           pattern: '^[0-9]{4}$'
+ *         description: Year
+ *         example: "2025"
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     months:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           month:
+ *                             type: string
+ *                             format: date
+ *                           month_revenue:
+ *                             type: number
+ *                           month_quantity:
+ *                             type: number
+ *                     total_revenue:
+ *                       type: number
+ *                     total_quantity:
+ *                       type: number
+ */
+router.get('/revenues', ErrorHandler(InvoiceController.getRevenues));
+
+router.use('/statistics', authenticationMiddleware);
+/**
+ * @swagger
+ * /api/v1/invoices/statistics:
+ *   get:
+ *     summary: Get invoice statistics
+ *     description: Retrieves statistics about invoices grouped by status
+ *     tags: [Invoice]
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     DELIVERED:
+ *                       type: object
+ *                       properties:
+ *                         count:
+ *                           type: number
+ *                         revenue:
+ *                           type: number
+ *                     PENDING:
+ *                       type: object
+ *                       properties:
+ *                         count:
+ *                           type: number
+ *                         revenue:
+ *                           type: number
+ *                     ON_DELIVERING:
+ *                       type: object
+ *                       properties:
+ *                         count:
+ *                           type: number
+ *                         revenue:
+ *                           type: number
+ */
+router.get('/statistics', ErrorHandler(InvoiceController.getStatistics));
+
 module.exports = router;
