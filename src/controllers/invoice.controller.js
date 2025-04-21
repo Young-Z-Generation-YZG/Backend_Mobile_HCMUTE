@@ -67,11 +67,11 @@ class InvoiceController {
       }).send(res);
    }
 
-   async getStatistics(req, res) {
+   async getUserStatistics(req, res) {
       new OK({
          message: 'OK',
          statusCode: 200,
-         data: await InvoiceService.getStatistics(req),
+         data: await InvoiceService.getUserStatistics(req),
       }).send(res);
    }
 

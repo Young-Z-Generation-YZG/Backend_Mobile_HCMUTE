@@ -19,6 +19,7 @@ const {
 const { default: mongoose } = require('mongoose');
 const { isNull } = require('lodash');
 const userModel = require('../domain/models/user.model');
+const profileModel = require('../domain/models/profile.model');
 
 class InvoiceService {
    constructor() {
@@ -624,82 +625,31 @@ class InvoiceService {
       }
    }
 
-   // async getStatistics(req) {
-   //    const { email } = req.user;
+   async getUserStatistics(req) {
+      const { userId } = req.params;
 
-   //    const user = await userModel.findOne({ email }).populate({
-   //       path: 'user_profile',
-   //       model: 'profile',
-   //    });
+      if (!userId) {
+         throw new BadRequestError(
+            'Missing required query parameters: _monthFrom, _monthTo, _year',
+         );
+      }
 
-   //    const statistics = await InvoiceModel.aggregate([
-   //       {
-   //          $match: { invoice_user: user._id },
-   //       },
-   //       {
-   //          $group: {
-   //             _id: '$invoice_status',
-   //             count: { $sum: 1 },
-   //             revenue: { $sum: '$invoice_total' },
-   //          },
-   //       },
-   //       {
-   //          $project: {
-   //             _id: 0,
-   //             status: '$_id',
-   //             count: 1,
-   //             revenue: 1,
-   //          },
-   //       },
-   //    ]);
+      const userExists = await userModel.exists({ _id: userId });
+      if (!userExists) {
+         throw new NotFoundError('User not found');
+      }
 
-   //    const result = {};
-   //    statistics.forEach((stat) => {
-   //       result[stat.status] = {
-   //          count: stat.count,
-   //          revenue: stat.revenue,
-   //       };
-   //    });
-
-   //    const allStatuses = [
-   //       'PENDING',
-   //       'CONFIRMED',
-   //       'REQUEST_CANCEL',
-   //       'CANCELLED',
-   //       'ON_PREPARING',
-   //       'ON_DELIVERING',
-   //       'DELIVERED',
-   //    ];
-
-   //    allStatuses.forEach((status) => {
-   //       if (!result[status]) {
-   //          result[status] = { count: 0, revenue: 0 };
-   //       }
-   //    });
-
-   //    return result;
-   // }
-
-   async getStatistics(req) {
-      const { email } = req.user;
-
-      const user = await userModel.findOne({ email }).populate({
+      const user = await userModel.findById(userId).populate({
          path: 'user_profile',
          model: 'profile',
       });
 
-      const invoices = await InvoiceModel.find({ invoice_user: user._id });
+      const invoices = await InvoiceModel.find({ invoice_user: userId });
 
-      const result = {};
-
-      invoices.forEach((invoice) => {
-         const status = invoice.invoice_status;
-         if (!result[status]) {
-            result[status] = { count: 0, revenue: 0 };
-         }
-         result[status].count += 1;
-         result[status].revenue += invoice.invoice_total;
-      });
+      let totalSpend = 0;
+      const orderSummary = {};
+      const orderHistory = {};
+      const orderList = [];
 
       const allStatuses = [
          'PENDING',
@@ -712,12 +662,60 @@ class InvoiceService {
       ];
 
       allStatuses.forEach((status) => {
-         if (!result[status]) {
-            result[status] = { count: 0, revenue: 0 };
-         }
+         orderSummary[status] = { count: 0, revenue: 0 };
       });
 
-      return result;
+      const currentYear = new Date().getFullYear();
+
+      for (let month = 1; month <= 12; month++) {
+         const monthKey = `${currentYear}-${String(month).padStart(2, '0')}`;
+         orderHistory[monthKey] = {
+            month_spend: 0,
+            month_quantity: 0,
+         };
+      }
+
+      invoices.forEach((invoice) => {
+         totalSpend += invoice.invoice_total || 0;
+
+         const status = invoice.invoice_status;
+         orderSummary[status].count += 1;
+         orderSummary[status].revenue += invoice.invoice_total || 0;
+
+         const createdAt = new Date(invoice.createdAt);
+         const monthKey = `${createdAt.getFullYear()}-${String(
+            createdAt.getMonth() + 1,
+         ).padStart(2, '0')}`;
+
+         orderHistory[monthKey].month_spend += invoice.invoice_total || 0;
+         orderHistory[monthKey].month_quantity += 1;
+
+         orderList.push({
+            order_id: invoice._id,
+            order_date: invoice.createdAt,
+            order_status: invoice.invoice_status,
+            order_amount: invoice.invoice_total,
+         });
+      });
+
+      return {
+         profile: {
+            customer_name:
+               user.user_profile.profile_firstName +
+               ' ' +
+               user.user_profile.profile_lastName,
+            avatar: user.user_profile.profile_img.secure_url,
+            email: user.email,
+            phone_number: user.user_profile.profile_phoneNumber,
+         },
+         order_summary: {
+            total_spend: totalSpend,
+            total_orders: invoices.length,
+            order_summary: orderSummary,
+            order_history: orderHistory,
+            order_list: orderList,
+         },
+      };
    }
 
    async getRevenues(req) {
