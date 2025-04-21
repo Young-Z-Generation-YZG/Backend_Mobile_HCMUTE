@@ -66,6 +66,14 @@ class UserController {
          data: await UserService.uploadProfileImage(req),
       }).send(res);
    }
+
+   async getAllUsers(req, res) {
+      new OK({
+         message: 'Get all users successfully',
+         statusCode: 200,
+         data: await UserService.getAllUsers(),
+      }).send(res);
+   }
 }
 
 module.exports = new UserController();

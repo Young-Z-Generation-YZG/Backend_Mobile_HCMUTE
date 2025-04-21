@@ -10,6 +10,7 @@ const VoucherService = require('./voucher.service');
 const { INVOICE_STATUS } = require('../domain/constants/domain');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
+const NotificationService = require('./notification.service');
 
 class ReviewService {
    async getAllByProductId(req) {
@@ -110,6 +111,8 @@ class ReviewService {
          'invoice_products.product_id': productId,
          invoice_status: INVOICE_STATUS.DELIVERED, // Allow reviews only for delivered products
       });
+
+      console.log('userInvoices', userInvoices);
 
       if (!userInvoices || userInvoices.length === 0) {
          throw new BadRequestError(
@@ -230,6 +233,14 @@ class ReviewService {
          // Commit the transaction
          await session.commitTransaction();
          session.endSession();
+
+         // Send notification about new review
+         try {
+            await NotificationService.notifyNewReview(newReview[0]);
+         } catch (error) {
+            console.error('Failed to send new review notification:', error);
+            // Don't throw the error, as the review was created successfully
+         }
 
          return true;
       } catch (error) {

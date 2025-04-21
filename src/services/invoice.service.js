@@ -5,6 +5,7 @@ const InvoiceModel = require('../domain/models/invoice.model');
 const ProductService = require('./product.service');
 const InventoryService = require('./inventory.service');
 const VoucherService = require('./voucher.service');
+const NotificationService = require('./notification.service');
 const {
    PAYMENT_METHODS,
    PAYMENT_METHODS_ARRAY,
@@ -404,15 +405,12 @@ class InvoiceService {
       // Apply voucher if provided
       let voucherResult = null;
       if (voucher_code) {
-         console.log('voucher_code', voucher_code);
-
          voucherResult = await VoucherService.applyVoucher(
             voucher_code,
             user._id,
             totalAmount,
          );
       }
-      console.log('voucherResult', voucherResult);
 
       // Create new Invoice with default status = "PENDING"
       const invoiceProducts = processedItems.map((item) => {
@@ -473,6 +471,14 @@ class InvoiceService {
             newInvoice[0]._id,
             newInvoice[0].createdAt,
          );
+
+         // Send notification about new invoice
+         try {
+            await NotificationService.notifyNewInvoice(newInvoice[0]);
+         } catch (error) {
+            console.error('Failed to send new invoice notification:', error);
+            // Don't throw the error, as the invoice was created successfully
+         }
 
          return true;
       } catch (error) {
@@ -569,9 +575,24 @@ class InvoiceService {
          );
       }
 
+      const previousStatus = invoice.invoice_status;
       invoice.invoice_status = _status;
 
       await invoice.save();
+
+      // Send notification about status change
+      try {
+         await NotificationService.notifyInvoiceStatusChange(
+            invoice,
+            previousStatus,
+         );
+      } catch (error) {
+         console.error(
+            'Failed to send invoice status change notification:',
+            error,
+         );
+         // Don't throw the error, as the status was updated successfully
+      }
 
       return true;
    }
@@ -586,11 +607,25 @@ class InvoiceService {
       }
 
       if (invoice.invoice_status === INVOICE_STATUS.ON_PREPARING) {
+         const previousStatus = invoice.invoice_status;
          invoice.invoice_status = INVOICE_STATUS.REQUEST_CANCEL;
 
          await invoice.save();
 
          await this.cancelAutoConfirmation(id);
+
+         // Send notification about status change
+         try {
+            await NotificationService.notifyInvoiceStatusChange(
+               invoice,
+               previousStatus,
+            );
+         } catch (error) {
+            console.error(
+               'Failed to send invoice status change notification:',
+               error,
+            );
+         }
 
          return true;
       } else {
@@ -610,12 +645,26 @@ class InvoiceService {
       }
 
       if (invoice.invoice_status === INVOICE_STATUS.PENDING) {
+         const previousStatus = invoice.invoice_status;
          invoice.invoice_status = INVOICE_STATUS.CONFIRMED;
 
          await invoice.save();
 
          // Schedule auto-confirmation
          await this.cancelAutoConfirmation(id);
+
+         // Send notification about status change
+         try {
+            await NotificationService.notifyInvoiceStatusChange(
+               invoice,
+               previousStatus,
+            );
+         } catch (error) {
+            console.error(
+               'Failed to send invoice status change notification:',
+               error,
+            );
+         }
 
          return true;
       } else {

@@ -157,8 +157,8 @@ router.get('/otp-verify', ErrorHandler(AccessController.verifyOtpPage));
  *         name: _verify_type
  *         schema:
  *           type: string
- *           enum: [email, resetPassword, changeEmail, changePhoneNumber]
- *         default: email
+ *           enum: [EMAIL, RESET_PASSWORD, CHANGE_EMAIL, CHANGE_PHONE_NUMBER]
+ *         default: EMAIL
  *         required: true
  *     responses:
  *       '200':
@@ -274,7 +274,7 @@ router.post(
  *         name: _verify_type
  *         schema:
  *           type: string
- *           enum: [resetPassword]
+ *           enum: [RESET_PASSWORD]
  *         required: true
  *     responses:
  *       '200':

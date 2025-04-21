@@ -7,6 +7,7 @@ const passport = require('passport');
 // configs
 const MongoDatabase = require('./infrastructure/persistence/mongo.db');
 const Redis = require('./infrastructure/redis');
+const socketService = require('./infrastructure/socket');
 
 const { assetPath } = require('../public');
 
@@ -18,6 +19,9 @@ const registerMiddlewares = require('./middlewares');
 
 const app = express();
 const server = require('http').createServer(app);
+
+// Initialize socket.io
+socketService.initialize(server);
 
 app.use(
    cors({

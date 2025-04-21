@@ -194,4 +194,20 @@ router.post(
    ErrorHandler(userController.uploadProfileImage),
 );
 
+/**
+ * @swagger
+ * /api/v1/users/admin:
+ *   get:
+ *     tags: [User]
+ *     description: Get all users (admin only)
+ *     responses:
+ *       '200':
+ *         description: OK
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ */
+router.get('/admin', ErrorHandler(userController.getAllUsers));
+
 module.exports = router;

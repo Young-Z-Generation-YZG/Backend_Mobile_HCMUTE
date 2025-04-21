@@ -402,6 +402,62 @@ class UserService {
          throw new Error(error);
       }
    };
+
+   // Get all users with their profiles
+   getAllUsers = async () => {
+      try {
+         const users = await userModel
+            .find()
+            .populate({
+               path: 'user_profile',
+               model: 'profile',
+               populate: {
+                  path: 'profile_address',
+                  model: 'address',
+               },
+            })
+            .lean()
+            .exec();
+
+         // Transform the data to return only the necessary fields
+         const res = users.map((user) => {
+            const profile = user.user_profile || {};
+            const address = profile.profile_address || {};
+
+            return {
+               _id: user._id,
+               email: user.email,
+               verified: user.verified,
+               first_name: profile.profile_firstName || '',
+               last_name: profile.profile_lastName || '',
+               phone_number: profile.profile_phoneNumber || '',
+               avatar: profile.profile_img
+                  ? profile.profile_img.secure_url
+                  : null,
+               address: {
+                  address_line: address.address_addressLine || '',
+                  district: address.address_district || '',
+                  province: address.address_province || '',
+                  country: address.address_country || '',
+               },
+               createdAt: user.createdAt,
+               updatedAt: user.updatedAt,
+               roles: user.roles || [],
+            };
+         });
+
+         return {
+            total_records: 0,
+            total_pages: 1,
+            page_size: 5,
+            current_page: 1,
+            items: res,
+            links: null,
+         };
+      } catch (error) {
+         throw new Error(`Error getting all users: ${error.message}`);
+      }
+   };
 }
 
 module.exports = new UserService();

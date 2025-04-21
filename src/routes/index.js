@@ -12,6 +12,7 @@ const invoiceRouter = require('./invoice.route');
 const reviewRouter = require('./review.route');
 const promotionRouter = require('./promotion.route');
 const voucherRouter = require('./voucher.route');
+const notificationRouter = require('./notification.route');
 
 router.use('/api/v1/users', userRouter);
 router.use('/api/v1/auth', accessRouter);
@@ -22,5 +23,6 @@ router.use('/api/v1/invoices', invoiceRouter);
 router.use('/api/v1/reviews', reviewRouter);
 router.use('/api/v1/promotions', promotionRouter);
 router.use('/api/v1/vouchers', voucherRouter);
+router.use('/api/v1/notifications', notificationRouter);
 
 module.exports = router;

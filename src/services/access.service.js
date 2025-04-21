@@ -393,7 +393,7 @@ class AccessService {
 
       const params = {
          _q: newJwtMail,
-         verify_type: VERIFY_TYPES.RESET_PASSWORD,
+         _verify_type: VERIFY_TYPES.RESET_PASSWORD,
       };
 
       const encodedUrl = generateEncodedUrl('api/v1/auth/otp-verify', params);

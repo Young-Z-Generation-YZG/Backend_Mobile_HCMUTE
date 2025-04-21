@@ -1,0 +1,409 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket Notification Example</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .notification-bell {
+            position: relative;
+            cursor: pointer;
+            font-size: 24px;
+        }
+        
+        #notification-badge {
+            position: absolute;
+            top: -8px;
+            right: -8px;
+            background-color: red;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            font-size: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            display: none;
+        }
+        
+        #notification-container {
+            max-height: 400px;
+            overflow-y: auto;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            margin-top: 20px;
+        }
+        
+        .notification-item {
+            padding: 15px;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            align-items: flex-start;
+        }
+        
+        .notification-item:last-child {
+            border-bottom: none;
+        }
+        
+        .notification-item.read {
+            background-color: #f9f9f9;
+            opacity: 0.7;
+        }
+        
+        .admin-notification {
+            background-color: #fff8e1; /* Light yellow background for admin notifications */
+        }
+        
+        .notification-icon {
+            margin-right: 15px;
+            color: #4285f4;
+        }
+        
+        .notification-content {
+            flex: 1;
+        }
+        
+        .notification-message {
+            margin-bottom: 5px;
+        }
+        
+        .notification-time {
+            font-size: 12px;
+            color: #888;
+        }
+        
+        .notification-actions {
+            margin-left: 10px;
+        }
+        
+        .mark-read-btn {
+            background: none;
+            border: 1px solid #ddd;
+            color: #555;
+            border-radius: 4px;
+            padding: 3px 8px;
+            cursor: pointer;
+            font-size: 12px;
+        }
+        
+        .actions {
+            margin-top: 20px;
+            display: flex;
+            gap: 10px;
+        }
+        
+        button {
+            padding: 8px 16px;
+            background-color: #4285f4;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        button:hover {
+            background-color: #3367d6;
+        }
+        
+        .status {
+            margin-top: 20px;
+            padding: 10px;
+            border-radius: 4px;
+            background-color: #f5f5f5;
+        }
+        
+        .connection-indicator {
+            display: inline-block;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            margin-right: 5px;
+            background-color: red;
+        }
+        
+        .connection-indicator.connected {
+            background-color: green;
+        }
+        
+        .role-toggle {
+            margin-top: 20px;
+            padding: 10px;
+            background-color: #f5f5f5;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+        }
+        
+        .toggle-switch {
+            position: relative;
+            display: inline-block;
+            width: 60px;
+            height: 34px;
+            margin-left: 10px;
+        }
+        
+        .toggle-switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        
+        .toggle-slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: #ccc;
+            transition: .4s;
+            border-radius: 34px;
+        }
+        
+        .toggle-slider:before {
+            position: absolute;
+            content: "";
+            height: 26px;
+            width: 26px;
+            left: 4px;
+            bottom: 4px;
+            background-color: white;
+            transition: .4s;
+            border-radius: 50%;
+        }
+        
+        input:checked + .toggle-slider {
+            background-color: #2196F3;
+        }
+        
+        input:checked + .toggle-slider:before {
+            transform: translateX(26px);
+        }
+        
+        .role-label {
+            margin-left: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>WebSocket Notification Example</h1>
+        <div class="notification-bell" id="notification-bell">
+            <i class="fas fa-bell"></i>
+            <span id="notification-badge">0</span>
+        </div>
+    </div>
+    
+    <div class="role-toggle">
+        <span>User Mode</span>
+        <label class="toggle-switch">
+            <input type="checkbox" id="role-toggle">
+            <span class="toggle-slider"></span>
+        </label>
+        <span class="role-label">Admin Mode</span>
+    </div>
+    
+    <div class="status">
+        <div><span class="connection-indicator" id="connection-indicator"></span> Status: <span id="connection-status">Disconnected</span></div>
+        <div>User ID: <span id="user-id">Not logged in</span></div>
+        <div>Role: <span id="user-role">User</span></div>
+    </div>
+    
+    <div class="actions">
+        <button id="connect-btn">Connect</button>
+        <button id="disconnect-btn">Disconnect</button>
+        <button id="simulate-user-btn">Simulate User Notification</button>
+        <button id="simulate-admin-btn">Simulate Admin Notification</button>
+        <button id="mark-all-btn">Mark All as Read</button>
+    </div>
+    
+    <h2>Notifications</h2>
+    <div id="notification-container"></div>
+    
+    <!-- Socket.IO client -->
+    <script src="/socket.io/socket.io.js"></script>
+    <!-- Our notification client -->
+    <script src="/js/notification-client.js"></script>
+    
+    <script>
+        // Demo user ID - in a real app, this would come from your authentication system
+        const demoUserId = '65f7e8a0cdcd9b002a432a01';
+        
+        // DOM elements
+        const roleToggle = document.getElementById('role-toggle');
+        const userRoleLabel = document.getElementById('user-role');
+        const connectBtn = document.getElementById('connect-btn');
+        const disconnectBtn = document.getElementById('disconnect-btn');
+        const simulateUserBtn = document.getElementById('simulate-user-btn');
+        const simulateAdminBtn = document.getElementById('simulate-admin-btn');
+        const markAllBtn = document.getElementById('mark-all-btn');
+        const userIdElement = document.getElementById('user-id');
+        const connectionStatus = document.getElementById('connection-status');
+        const connectionIndicator = document.getElementById('connection-indicator');
+        
+        // Initialize notification client based on selected role
+        let notificationClient = null;
+        
+        function initializeClient() {
+            // Clean up previous client if it exists
+            if (notificationClient && notificationClient.connected) {
+                notificationClient.disconnect();
+            }
+            
+            const isAdmin = roleToggle.checked;
+            userRoleLabel.textContent = isAdmin ? 'Admin' : 'User';
+            
+            // Create new client with appropriate role
+            notificationClient = new NotificationClient({
+                notificationContainerId: 'notification-container',
+                badgeId: 'notification-badge',
+                soundEnabled: true,
+                isAdmin: isAdmin
+            });
+            
+            // Override the connection status method to update UI
+            notificationClient._updateConnectionStatus = (connected) => {
+                connectionStatus.textContent = connected ? 'Connected' : 'Disconnected';
+                connectionIndicator.className = 'connection-indicator' + (connected ? ' connected' : '');
+            };
+        }
+        
+        // Initialize the client on page load
+        initializeClient();
+        
+        // Handle role toggle
+        roleToggle.addEventListener('change', () => {
+            initializeClient();
+            
+            // If already connected, reconnect with new role
+            if (connectionStatus.textContent === 'Connected') {
+                connectBtn.click();
+            }
+        });
+        
+        // Connect button
+        connectBtn.addEventListener('click', () => {
+            notificationClient.connect(demoUserId);
+            userIdElement.textContent = demoUserId;
+        });
+        
+        // Disconnect button
+        disconnectBtn.addEventListener('click', () => {
+            notificationClient.disconnect();
+            userIdElement.textContent = 'Not logged in';
+        });
+        
+        // Simulate user notification
+        simulateUserBtn.addEventListener('click', async () => {
+            if (!notificationClient.connected) {
+                alert('Please connect first!');
+                return;
+            }
+            
+            // This is just for demo purposes - in a real app, notifications would come from the server
+            const mockNotification = {
+                id: 'mock-' + Date.now(),
+                type: 'ACTIVITY',
+                message: 'This is a simulated USER notification at ' + new Date().toLocaleTimeString(),
+                data: {},
+                createdAt: new Date()
+            };
+            
+            // Send notification via appropriate channel
+            notificationClient.socket.emit('user-notification', mockNotification);
+        });
+        
+        // Simulate admin notification
+        simulateAdminBtn.addEventListener('click', async () => {
+            if (!notificationClient.connected) {
+                alert('Please connect first!');
+                return;
+            }
+            
+            if (!roleToggle.checked) {
+                alert('You need to be in Admin mode to receive admin notifications!');
+                return;
+            }
+            
+            // This is just for demo purposes
+            const mockNotification = {
+                id: 'mock-' + Date.now(),
+                type: 'NEW_ORDER',
+                message: 'This is a simulated ADMIN notification at ' + new Date().toLocaleTimeString(),
+                data: {
+                    invoiceId: 'INV' + Math.floor(Math.random() * 1000),
+                    total: Math.floor(Math.random() * 10000) / 100
+                },
+                createdAt: new Date()
+            };
+            
+            // Send notification via appropriate channel
+            notificationClient.socket.emit('admin-notification', mockNotification);
+        });
+        
+        // Mark all as read button
+        markAllBtn.addEventListener('click', async () => {
+            if (!notificationClient.connected) {
+                alert('Please connect first!');
+                return;
+            }
+            
+            try {
+                await notificationClient.markAllAsRead();
+                
+                // Update UI
+                const notifications = document.querySelectorAll('.notification-item');
+                notifications.forEach(item => {
+                    item.classList.add('read');
+                });
+                
+                alert('All notifications marked as read');
+            } catch (error) {
+                alert('Error marking all as read: ' + error.message);
+            }
+        });
+        
+        // Load initial notifications on page load
+        window.addEventListener('load', async () => {
+            // Automatically connect in this demo
+            // In a real app, you'd likely connect after auth
+            connectBtn.click();
+            
+            try {
+                const result = await notificationClient.fetchNotifications();
+                
+                // Display notifications
+                result.data.forEach(notification => {
+                    // Set channel based on user role for display purposes
+                    notification.channel = roleToggle.checked ? 'admin' : 'user';
+                    notificationClient._displayNotification(notification);
+                    if (!notification.isRead) {
+                        notificationClient.unreadCount++;
+                    }
+                });
+                
+                notificationClient._updateNotificationBadge();
+            } catch (error) {
+                console.error('Error loading notifications:', error);
+            }
+        });
+    </script>
+</body>
+</html> 
