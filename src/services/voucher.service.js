@@ -3,6 +3,7 @@ const {
    NotFoundError,
 } = require('../domain/core/error.response');
 const voucherModel = require('../domain/models/voucher.model');
+const userModel = require('../domain/models/user.model');
 const mongoose = require('mongoose');
 const crypto = require('crypto');
 
@@ -156,6 +157,41 @@ class VoucherService {
       const vouchers = await voucherModel
          .find({
             voucher_user: userId,
+            voucher_status: 'ACTIVE',
+         })
+         .sort({ createdAt: -1 });
+
+      return vouchers.map((voucher) => ({
+         id: voucher._id,
+         code: voucher.voucher_code,
+         name: voucher.voucher_name,
+         description: voucher.voucher_description,
+         value: voucher.voucher_value,
+         type: voucher.voucher_type,
+         minOrderValue: voucher.voucher_min_order_value,
+         maxDiscount: voucher.voucher_max_discount,
+         startDate: voucher.voucher_start_date,
+         endDate: voucher.voucher_end_date,
+         isValid: voucher.isValid(),
+         source: voucher.voucher_source,
+      }));
+   }
+
+   /**
+    * Get all vouchers for a user by using authentication
+    * @returns {Array} - List of vouchers
+    */
+   async getVouchers(req) {
+      const { email } = req.user;
+
+      const user = await userModel.findOne({ email }).populate({
+         path: 'user_profile',
+         model: 'profile',
+      });
+
+      const vouchers = await voucherModel
+         .find({
+            voucher_user: user._id,
             voucher_status: 'ACTIVE',
          })
          .sort({ createdAt: -1 });

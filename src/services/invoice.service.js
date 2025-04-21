@@ -18,6 +18,8 @@ const {
 } = require('../domain/core/error.response');
 const { default: mongoose } = require('mongoose');
 const { isNull } = require('lodash');
+const userModel = require('../domain/models/user.model');
+const profileModel = require('../domain/models/profile.model');
 
 class InvoiceService {
    constructor() {
@@ -621,6 +623,179 @@ class InvoiceService {
             `Cannot cancel Order with status ${invoice.invoice_status}. Order status must be ${INVOICE_STATUS.PENDING}`,
          );
       }
+   }
+
+   async getUserStatistics(req) {
+      const { userId } = req.params;
+
+      if (!userId) {
+         throw new BadRequestError(
+            'Missing required query parameters: _monthFrom, _monthTo, _year',
+         );
+      }
+
+      const userExists = await userModel.exists({ _id: userId });
+      if (!userExists) {
+         throw new NotFoundError('User not found');
+      }
+
+      const user = await userModel.findById(userId).populate({
+         path: 'user_profile',
+         model: 'profile',
+      });
+
+      const invoices = await InvoiceModel.find({ invoice_user: userId });
+
+      let totalSpend = 0;
+      const orderSummary = {};
+      const orderHistory = {};
+      const orderList = [];
+
+      const allStatuses = [
+         'PENDING',
+         'CONFIRMED',
+         'REQUEST_CANCEL',
+         'CANCELLED',
+         'ON_PREPARING',
+         'ON_DELIVERING',
+         'DELIVERED',
+      ];
+
+      allStatuses.forEach((status) => {
+         orderSummary[status] = { count: 0, revenue: 0 };
+      });
+
+      const currentYear = new Date().getFullYear();
+
+      for (let month = 1; month <= 12; month++) {
+         const monthKey = `${currentYear}-${String(month).padStart(2, '0')}`;
+         orderHistory[monthKey] = {
+            month_spend: 0,
+            month_quantity: 0,
+         };
+      }
+
+      invoices.forEach((invoice) => {
+         totalSpend += invoice.invoice_total || 0;
+
+         const status = invoice.invoice_status;
+         orderSummary[status].count += 1;
+         orderSummary[status].revenue += invoice.invoice_total || 0;
+
+         const createdAt = new Date(invoice.createdAt);
+         const monthKey = `${createdAt.getFullYear()}-${String(
+            createdAt.getMonth() + 1,
+         ).padStart(2, '0')}`;
+
+         orderHistory[monthKey].month_spend += invoice.invoice_total || 0;
+         orderHistory[monthKey].month_quantity += 1;
+
+         orderList.push({
+            order_id: invoice._id,
+            order_date: invoice.createdAt,
+            order_status: invoice.invoice_status,
+            order_amount: invoice.invoice_total,
+         });
+      });
+
+      return {
+         profile: {
+            customer_name:
+               user.user_profile.profile_firstName +
+               ' ' +
+               user.user_profile.profile_lastName,
+            avatar: user.user_profile.profile_img.secure_url,
+            email: user.email,
+            phone_number: user.user_profile.profile_phoneNumber,
+         },
+         order_summary: {
+            total_spend: totalSpend,
+            total_orders: invoices.length,
+            order_summary: orderSummary,
+            order_history: orderHistory,
+            order_list: orderList,
+         },
+      };
+   }
+
+   async getRevenues(req) {
+      const { _monthFrom, _monthTo, _year } = req.query;
+
+      if (!_monthFrom || !_monthTo || !_year) {
+         throw new BadRequestError(
+            'Missing required query parameters: _monthFrom, _monthTo, _year',
+         );
+      }
+
+      const monthFromNum = parseInt(_monthFrom, 10);
+      const monthToNum = parseInt(_monthTo, 10);
+      const yearNum = parseInt(_year, 10);
+
+      if (isNaN(monthFromNum) || monthFromNum < 1 || monthFromNum > 12) {
+         throw new BadRequestError(
+            'Invalid _monthFrom parameter. Must be between 01-12',
+         );
+      }
+
+      if (isNaN(monthToNum) || monthToNum < 1 || monthToNum > 12) {
+         throw new BadRequestError(
+            'Invalid _monthTo parameter. Must be between 01-12',
+         );
+      }
+
+      if (isNaN(yearNum) || yearNum.toString().length !== 4) {
+         throw new BadRequestError(
+            'Invalid _year parameter. Must be a 4-digit year',
+         );
+      }
+
+      const startDate = new Date(yearNum, monthFromNum - 1, 1);
+      const endDate = new Date(yearNum, monthToNum, 0, 23, 59, 59, 999);
+
+      const invoices = await InvoiceModel.find({
+         createdAt: { $gte: startDate, $lte: endDate },
+         invoice_status: INVOICE_STATUS.DELIVERED,
+      });
+
+      const result = {};
+      let totalRevenue = 0;
+      let totalQuantity = 0;
+
+      invoices.forEach((invoice) => {
+         const createdAt = new Date(invoice.createdAt);
+         const monthKey = `${createdAt.getFullYear()}-${String(
+            createdAt.getMonth() + 1,
+         ).padStart(2, '0')}`;
+
+         if (!result[monthKey]) {
+            result[monthKey] = {
+               month: monthKey,
+               month_revenue: 0,
+               month_quantity: 0,
+            };
+         }
+
+         result[monthKey].month_revenue += invoice.invoice_total || 0;
+
+         const quantity =
+            invoice.invoice_products?.reduce((sum, item) => {
+               return sum + (item.quantity || 0);
+            }, 0) || 0;
+
+         result[monthKey].month_quantity += quantity;
+
+         totalRevenue += invoice.invoice_total || 0;
+         totalQuantity += quantity;
+      });
+
+      return result;
+
+      // console.log('invoices', invoices);
+      // console.log('monthFromNum', monthFromNum);
+      // console.log('monthToNum', monthToNum);
+      // console.log('yearNum', yearNum);
+      // console.log('startDate', startDate);
+      // console.log('endDate', endDate);
    }
 }
 
