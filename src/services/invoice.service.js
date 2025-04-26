@@ -424,6 +424,7 @@ class InvoiceService {
             product_sub_total_price: item.product_sub_total_price,
             final_price: item.final_price,
             quantity: item.quantity,
+            is_reviewed: false,
             promotion: item.promotion,
          };
       });

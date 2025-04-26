@@ -92,71 +92,64 @@ class ReviewService {
    async create(req) {
       const { email } = req.user;
       const { productId } = req.params;
-      const { content, review_rating } = req.body;
+      const { content, review_rating, invoice_id } = req.body;
 
-      // Validate rating
       if (!review_rating || review_rating < 1 || review_rating > 5) {
          throw new BadRequestError('Rating must be between 1 and 5');
       }
 
-      // 1. Get user ID from email
+      if (!content) {
+         throw new BadRequestError('Content must be write');
+      }
+
+      if (invoice_id && !mongoose.Types.ObjectId.isValid(invoice_id)) {
+         throw new BadRequestError('Invalid invoice ID format');
+      }
+
       const user = await userModel.findOne({ email });
       if (!user) {
          throw new NotFoundError('User not found');
       }
 
-      // 2. Check if user has bought the product by looking through their invoices
-      const userInvoices = await invoiceModel.find({
+      const query = {
+         _id: invoice_id,
          invoice_user: user._id,
-         'invoice_products.product_id': productId,
-         invoice_status: INVOICE_STATUS.DELIVERED, // Allow reviews only for delivered products
-      });
+         invoice_status: INVOICE_STATUS.DELIVERED,
+      };
 
-      console.log('userInvoices', userInvoices);
+      const userInvoice = await invoiceModel.find(query);
 
-      if (!userInvoices || userInvoices.length === 0) {
+      if (!userInvoice || userInvoice.length === 0) {
          throw new BadRequestError(
-            'You can only review products you have purchased',
+            invoice_id 
+               ? 'The specified invoice does not exist or does not contain this product'
+               : 'You can only review products you have purchased'
          );
       }
 
-      // Find invoices that have not been reviewed yet
-      const reviewedInvoices = await reviewModel
+      const reviewedInvoice = await reviewModel
          .find({
             review_user: user._id,
             review_product: productId,
+            review_invoice: invoice_id
          })
-         .select('review_invoice');
 
-      const reviewedInvoiceIds = reviewedInvoices.map((review) =>
-         review.review_invoice.toString(),
-      );
-
-      const availableInvoices = userInvoices.filter(
-         (invoice) => !reviewedInvoiceIds.includes(invoice._id.toString()),
-      );
-
-      if (availableInvoices.length === 0) {
+      if (reviewedInvoice.length !== 0) {
          throw new BadRequestError(
             'You have already reviewed this product for all your purchases',
          );
       }
 
-      // 4. Create the review using the invoice ID from the oldest non-reviewed purchase
-      const invoiceToReview = availableInvoices[0];
-
-      // Use a session to ensure all operations succeed or fail together
       const session = await mongoose.startSession();
       session.startTransaction();
 
       try {
-         // Create the review
          const newReview = await reviewModel.create(
             [
                {
                   review_user: user._id,
                   review_product: productId,
-                  review_invoice: invoiceToReview._id,
+                  review_invoice: invoice_id,
                   review_content: content,
                   review_rating: review_rating,
                   voucher_generated: false,
@@ -164,17 +157,27 @@ class ReviewService {
             ],
             { session },
          );
-
-         // 5. Update product average_rating and rating_star
+   
+         // 5. Update the is_reviewed flag for this specific product in the invoice
+         await invoiceModel.findOneAndUpdate(
+            { 
+               _id: invoice_id,
+               'invoice_products.product_id': productId
+            },
+            { 
+               $set: { 'invoice_products.$.is_reviewed': true }
+            },
+            { session }
+         );
+   
+         // 6. Update product average_rating and rating_star
          // Get all reviews for this product to calculate new average
          const productReviews = await reviewModel.find(
-            {
-               review_product: productId,
-            },
+            { review_product: productId },
             null,
-            { session },
+            { session }
          );
-
+   
          const totalReviews = productReviews.length;
          const averageRating =
             totalReviews > 0
@@ -183,14 +186,14 @@ class ReviewService {
                     0,
                  ) / totalReviews
                : 0;
-
+   
          // Count occurrences of each star rating
          const starCounts = [0, 0, 0, 0, 0]; // Index 0 = 1 star, index 4 = 5 stars
          productReviews.forEach((review) => {
             const ratingIndex = review.review_rating - 1; // Convert 1-5 to 0-4 index
             starCounts[ratingIndex]++;
          });
-
+   
          // Update product with new rating data
          await productModel.findByIdAndUpdate(
             productId,
@@ -209,16 +212,14 @@ class ReviewService {
                   ],
                },
             },
-            { session },
+            { session }
          );
-
-         // 6. Generate a voucher for the user as a reward for the review using VoucherService
+   
          const voucher = await VoucherService.generateReviewVoucher(
             user,
             newReview[0]._id,
          );
-
-         // Update the review to reference the generated voucher
+   
          await reviewModel.findByIdAndUpdate(
             newReview[0]._id,
             {
@@ -227,29 +228,185 @@ class ReviewService {
                   voucher_id: voucher._id,
                },
             },
-            { session },
+            { session }
          );
-
-         // Commit the transaction
+   
          await session.commitTransaction();
          session.endSession();
-
-         // Send notification about new review
+   
          try {
             await NotificationService.notifyNewReview(newReview[0]);
          } catch (error) {
             console.error('Failed to send new review notification:', error);
-            // Don't throw the error, as the review was created successfully
          }
-
-         return true;
+   
+         return {
+            message: 'Review created successfully',
+            review: newReview[0],
+            voucher: {
+               id: voucher._id,
+               code: voucher.voucher_code,
+               discount: voucher.voucher_discount_value
+            }
+         };
       } catch (error) {
-         // If anything fails, abort the transaction
          await session.abortTransaction();
          session.endSession();
          console.error('Error creating review:', error);
          throw new BadRequestError(error.message || 'Failed to create review');
       }
+
+      // // 1. Get user ID from email
+      // const user = await userModel.findOne({ email });
+      // if (!user) {
+      //    throw new NotFoundError('User not found');
+      // }
+
+      // // 2. Check if user has bought the product by looking through their invoices
+      // const userInvoices = await invoiceModel.find({
+      //    invoice_user: user._id,
+      //    'invoice_products.product_id': productId,
+      //    invoice_status: INVOICE_STATUS.DELIVERED, // Allow reviews only for delivered products
+      // });
+
+      // console.log('userInvoices', userInvoices);
+
+      // if (!userInvoices || userInvoices.length === 0) {
+      //    throw new BadRequestError(
+      //       'You can only review products you have purchased',
+      //    );
+      // }
+
+      // // Find invoices that have not been reviewed yet
+      // const reviewedInvoices = await reviewModel
+      //    .find({
+      //       review_user: user._id,
+      //       review_product: productId,
+      //    })
+      //    .select('review_invoice');
+
+      // const reviewedInvoiceIds = reviewedInvoices.map((review) =>
+      //    review.review_invoice.toString(),
+      // );
+
+      // const availableInvoices = userInvoices.filter(
+      //    (invoice) => !reviewedInvoiceIds.includes(invoice._id.toString()),
+      // );
+
+      // if (availableInvoices.length === 0) {
+      //    throw new BadRequestError(
+      //       'You have already reviewed this product for all your purchases',
+      //    );
+      // }
+
+      // // 4. Create the review using the invoice ID from the oldest non-reviewed purchase
+      // const invoiceToReview = availableInvoices[0];
+
+      // // Use a session to ensure all operations succeed or fail together
+      // const session = await mongoose.startSession();
+      // session.startTransaction();
+
+      // try {
+      //    // Create the review
+      //    const newReview = await reviewModel.create(
+      //       [
+      //          {
+      //             review_user: user._id,
+      //             review_product: productId,
+      //             review_invoice: invoiceToReview._id,
+      //             review_content: content,
+      //             review_rating: review_rating,
+      //             voucher_generated: false,
+      //          },
+      //       ],
+      //       { session },
+      //    );
+
+      //    // 5. Update product average_rating and rating_star
+      //    // Get all reviews for this product to calculate new average
+      //    const productReviews = await reviewModel.find(
+      //       {
+      //          review_product: productId,
+      //       },
+      //       null,
+      //       { session },
+      //    );
+
+      //    const totalReviews = productReviews.length;
+      //    const averageRating =
+      //       totalReviews > 0
+      //          ? productReviews.reduce(
+      //               (sum, review) => sum + review.review_rating,
+      //               0,
+      //            ) / totalReviews
+      //          : 0;
+
+      //    // Count occurrences of each star rating
+      //    const starCounts = [0, 0, 0, 0, 0]; // Index 0 = 1 star, index 4 = 5 stars
+      //    productReviews.forEach((review) => {
+      //       const ratingIndex = review.review_rating - 1; // Convert 1-5 to 0-4 index
+      //       starCounts[ratingIndex]++;
+      //    });
+
+      //    // Update product with new rating data
+      //    await productModel.findByIdAndUpdate(
+      //       productId,
+      //       {
+      //          $set: {
+      //             'average_rating.average_value': parseFloat(
+      //                averageRating.toFixed(1),
+      //             ),
+      //             'average_rating.rating_count': totalReviews,
+      //             rating_star: [
+      //                { star: 1, star_count: starCounts[0] },
+      //                { star: 2, star_count: starCounts[1] },
+      //                { star: 3, star_count: starCounts[2] },
+      //                { star: 4, star_count: starCounts[3] },
+      //                { star: 5, star_count: starCounts[4] },
+      //             ],
+      //          },
+      //       },
+      //       { session },
+      //    );
+
+      //    // 6. Generate a voucher for the user as a reward for the review using VoucherService
+      //    const voucher = await VoucherService.generateReviewVoucher(
+      //       user,
+      //       newReview[0]._id,
+      //    );
+
+      //    // Update the review to reference the generated voucher
+      //    await reviewModel.findByIdAndUpdate(
+      //       newReview[0]._id,
+      //       {
+      //          $set: {
+      //             voucher_generated: true,
+      //             voucher_id: voucher._id,
+      //          },
+      //       },
+      //       { session },
+      //    );
+
+      //    // Commit the transaction
+      //    await session.commitTransaction();
+      //    session.endSession();
+
+      //    // Send notification about new review
+      //    try {
+      //       await NotificationService.notifyNewReview(newReview[0]);
+      //    } catch (error) {
+      //       console.error('Failed to send new review notification:', error);
+      //       // Don't throw the error, as the review was created successfully
+      //    }
+
+      //    return true;
+      // } catch (error) {
+      //    // If anything fails, abort the transaction
+      //    await session.abortTransaction();
+      //    session.endSession();
+      //    console.error('Error creating review:', error);
+      //    throw new BadRequestError(error.message || 'Failed to create review');
+      // }
    }
 
    async update(req) {

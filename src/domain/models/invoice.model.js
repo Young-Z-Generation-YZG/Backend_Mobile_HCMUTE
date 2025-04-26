@@ -50,6 +50,10 @@ const productInvoiceSchema = new Schema({
       type: Number,
       required: true,
    },
+   is_reviewed: {
+      type: Boolean,
+      default: false,
+   },
    promotion: {
       type: {
          promotion_id: {

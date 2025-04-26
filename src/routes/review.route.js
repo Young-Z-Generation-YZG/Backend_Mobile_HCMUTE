@@ -122,6 +122,11 @@ router.use('/', authenticationMiddleware);
  *          minimum: 1
  *          maximum: 5
  *          required: true
+ *         invoice_id:
+ *          type: string
+ *          description: Optional ID of a specific invoice to review from
+ *          example: "60d5ec9861e821a4acb4c503"
+ *          required: false
  *   responses:
  *    '201':
  *      description: Review created successfully
