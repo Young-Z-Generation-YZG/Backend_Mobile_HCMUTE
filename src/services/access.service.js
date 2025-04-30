@@ -16,7 +16,7 @@ const MailerService = require('../infrastructure/mailer/mailer.service');
 const RedisService = require('../infrastructure/redis');
 
 const userModel = require('../domain/models/user.model');
-const { VERIFY_TYPES } = require('../domain/constants/domain');
+const { VERIFY_TYPES, VERIFICATION_TYPES } = require('../domain/constants/domain');
 
 class AccessService {
    // [POST] /auth/register [DONE]
@@ -59,10 +59,13 @@ class AccessService {
          _verify_type: VERIFY_TYPES.EMAIL,
       };
 
-      const encodedUrl = generateEncodedUrl('/api/v1/auth/otp-verify', params);
+      // const encodedUrl = generateEncodedUrl(
+      //    '/api/v1/auth/send-mail-otp', 
+      //    params
+      // );
 
       return {
-         redirect: encodedUrl,
+         params: params,
       };
    }
 
@@ -96,13 +99,18 @@ class AccessService {
             _verify_type: VERIFY_TYPES.EMAIL,
          };
 
-         const encodedUrl = generateEncodedUrl(
-            '/api/v1/auth/otp-verify',
-            params,
-         );
+         // const encodedUrl = generateEncodedUrl(
+         //    '/api/v1/auth/otp-verify',
+         //    params,
+         // );
 
          return {
-            redirect: encodedUrl,
+            email: existUser.email,
+            access_token: '',
+            refresh_token: '',
+            verify_type: VERIFICATION_TYPES.EMAIL_VERIFICATION,
+            params: params,
+            expired_in: 0,
          };
       }
 
@@ -115,8 +123,11 @@ class AccessService {
          JwtService.generateTokenPair(payload);
 
       return {
+         email: existUser.email,
          access_token: accessToken,
          refresh_token: refreshToken,
+         verify_type: VERIFICATION_TYPES.CREDENTIALS_VERIFICATION,
+         params : {},
          expired_in: 300,
       };
    }

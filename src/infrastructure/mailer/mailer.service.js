@@ -14,6 +14,9 @@ const transporter = nodeMailer.createTransport({
       user: MAILER_SENDER,
       pass: MAILER_PASSWORD,
    },
+   tls: {
+      rejectUnauthorized: false
+   }
 });
 
 // point to the template'folder
