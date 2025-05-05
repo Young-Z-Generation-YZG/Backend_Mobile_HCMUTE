@@ -20,6 +20,7 @@ const reviewModel = require('../domain/models/review.model');
 const productModel = require('../domain/models/product.model');
 const InvoiceModel = require('../domain/models/invoice.model');
 const { VERIFY_TYPES } = require('../domain/constants/domain');
+const socketService = require('../infrastructure/socket');
 
 class UserService {
    // [DONE]
@@ -186,6 +187,22 @@ class UserService {
       if (!user) {
          throw new BadRequestError('User not found');
       }
+
+      // const notificationData = {
+      //    title: 'Test',
+      //    body: 'Test',
+      //    type: 'ADDRESS',
+      //    createdAt: new Date().toISOString()
+      // };
+
+      // if (user._id) {
+      //    const idString = user._id.toString();
+      //    console.log('socketService.isUserOnline', idString)
+      //    if (socketService.isUserOnline(idString)) {
+      //       console.log('test02')
+      //       socketService.sendNotification(idString, notificationData)
+      //    }
+      // }
 
       const address = user.user_profile.profile_address;
 

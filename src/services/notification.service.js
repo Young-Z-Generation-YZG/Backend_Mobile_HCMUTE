@@ -122,36 +122,106 @@ class NotificationService {
    }
 
    // Get notifications for a user
-   async getUserNotifications(userId, { page = 1, limit = 10, isRead = null }) {
+   async getUserNotifications(req) {
+      
       try {
-         const query = {
-            recipient: userId,
-            isDeleted: false,
-         };
-
-         if (isRead !== null) {
-            query.isRead = isRead;
+         const {
+            _page = 1,
+            _limit = 10,
+            _isRead,
+            _sort = 'desc'
+         } = req.query;
+         
+         const userId = req.user._id;
+         
+         const page = parseInt(_page, 10);
+         const limit = parseInt(_limit, 10);
+         
+         if (isNaN(page) || page < 1) {
+            throw new BadRequestError('Invalid page number');
+         }
+         if (isNaN(limit) || limit < 1 || limit > 100) {
+            throw new BadRequestError('Invalid limit value (1-100)');
+         }
+         if (_sort !== 'asc' && _sort !== 'desc') {
+            throw new BadRequestError('Sort direction must be "asc" or "desc"');
          }
 
-         const total = await Notification.countDocuments(query);
-         const notifications = await Notification.find(query)
-            .sort({ createdAt: -1 })
-            .skip((page - 1) * limit)
-            .limit(limit)
-            .populate('sender', 'name avatar');
+         const query = {
+            recipient: userId,
+            isDeleted: { $ne: true }
+         };
+   
+         if (_isRead === 'true') {
+            query.isRead = true;
+         } else if (_isRead === 'false') {
+            query.isRead = false;
+         }
+   
+         const skip = (page - 1) * limit;
+         
+         // Set sort direction (1 for ascending, -1 for descending)
+         const sortDirection = _sort === 'asc' ? 1 : -1;
+         const sortOptions = { createdAt: sortDirection };
 
+         const total_records = await NotificationModel.countDocuments(query);
+         const total_pages = Math.ceil(total_records / limit);
+         
+         const notifications = await NotificationModel.find(query)
+            .sort({ createdAt: -1 })
+            .skip(skip)
+            .limit(limit)
+            .populate('sender', 'email user_profile')
+            .lean();
+   
          return {
-            data: notifications,
-            pagination: {
-               total,
-               page: parseInt(page),
-               limit: parseInt(limit),
-               totalPages: Math.ceil(total / limit),
+            items: notifications,
+            meta: {
+               totalItems: total_records,
+               totalPages: total_pages,
+               currentPage: page,
+               itemsPerPage: limit,
             },
          };
       } catch (error) {
          throw new Error(`Error fetching notifications: ${error.message}`);
       }
+      // try {
+      //    const {
+      //    userId,
+      //    _page = 1,
+      //    _limit = 1,
+      //    _isRead,
+      //    } = req.query;
+            
+      //    const query = {
+      //       recipient: userId,
+      //       isDeleted: false,
+      //    };
+   
+      //    if (isRead !== null) {
+      //       query.isRead = isRead;
+      //    }
+   
+      //    const total = await Notification.countDocuments(query);
+      //    const notifications = await Notification.find(query)
+      //       .sort({ createdAt: -1 })
+      //       .skip((page - 1) * limit)
+      //       .limit(limit)
+      //       .populate('sender', 'name avatar');
+   
+      //    return {
+      //       data: notifications,
+      //       pagination: {
+      //          total,
+      //          page: parseInt(page),
+      //          limit: parseInt(limit),
+      //          totalPages: Math.ceil(total / limit),
+      //       },
+      //    };
+      // } catch (error) {
+      //    throw new Error(`Error fetching notifications: ${error.message}`);
+      // }
    }
 
    // Mark a notification as read
@@ -239,7 +309,7 @@ class NotificationService {
 
          // Create a notification for the user
          const newInvoiceNotification = {
-            recipient: null,
+            recipient: invoice.invoice_user.toString(),
             sender: null,
             type: NOTIFICATION_TYPES.INVOICE,
             invoice_info: {
@@ -255,9 +325,10 @@ class NotificationService {
             },
          };
 
-         await this.create(newInvoiceNotification);
+         const notification = await this.create(newInvoiceNotification);
 
          socketService.broadcastToAdmins(newInvoiceNotification);
+         socketService.sendNotification(user._id.toString(),notification);
 
          return { success: true };
       } catch (error) {
@@ -341,7 +412,7 @@ class NotificationService {
             .lean();
 
          const newReviewNotification = {
-            recipient: null,
+            recipient: review.review_user.toString(),
             sender: null,
             type: NOTIFICATION_TYPES.REVIEW,
             review_info: {
@@ -359,9 +430,10 @@ class NotificationService {
             },
          };
 
-         await this.create(newReviewNotification);
+         const notification = await this.create(newReviewNotification);
 
          socketService.broadcastToAdmins(newReviewNotification);
+         socketService.sendNotification(user._id.toString(),notification);
 
          return { success: true };
       } catch (error) {

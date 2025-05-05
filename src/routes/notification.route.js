@@ -5,8 +5,6 @@ const router = express.Router();
 const { authenticationMiddleware } = require('../middlewares/auth.middleware');
 const notificationController = require('../controllers/notification.controller');
 
-// All routes require authentication
-// router.use(authenticationMiddleware);
 
 /**
  * @swagger
@@ -198,5 +196,94 @@ router.delete('/:notificationId', notificationController.deleteNotification);
  *         description: Unauthorized access
  */
 router.get('/admin-metrics', notificationController.getAdminMetrics);
+
+// All routes require authentication
+router.use(authenticationMiddleware);
+
+/**
+ * @swagger
+ * /api/v1/notifications/user:
+ *   get:
+ *     summary: Get user notifications
+ *     description: Get paginated list of notifications for the authenticated user
+ *     tags: [Notifications]
+ *     parameters:
+ *       - in: query
+ *         name: _page
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           default: 1
+ *         description: Page number for pagination
+ *         example: 1
+ *       - in: query
+ *         name: _limit
+ *         schema:
+ *           type: integer
+ *           minimum: 1
+ *           maximum: 100
+ *           default: 10
+ *         description: Number of notifications per page
+ *         example: 10
+ *       - in: query
+ *         name: _isRead
+ *         schema:
+ *           type: string
+ *           enum: [true, false]
+ *         description: Filter by read status (optional)
+ *         example: false
+ *     responses:
+ *       '200':
+ *         description: List of user notifications
+ *         content:
+ *           application/json:
+ *             schema:
+ *               type: object
+ *               properties:
+ *                 statusCode:
+ *                   type: number
+ *                   example: 200
+ *                 message:
+ *                   type: string
+ *                   example: OK
+ *                 data:
+ *                   type: object
+ *                   properties:
+ *                     total_records:
+ *                       type: integer
+ *                       example: 25
+ *                     total_pages:
+ *                       type: integer
+ *                       example: 3
+ *                     page_size:
+ *                       type: integer
+ *                       example: 10
+ *                     current_page:
+ *                       type: integer
+ *                       example: 1
+ *                     items:
+ *                       type: array
+ *                       items:
+ *                         type: object
+ *                         properties:
+ *                           _id:
+ *                             type: string
+ *                           type:
+ *                             type: string
+ *                             enum: [SYSTEM, USER, INVOICE, REVIEW, VOUCHER, ACTIVITY]
+ *                           recipient:
+ *                             type: string
+ *                           isRead:
+ *                             type: boolean
+ *                           createdAt:
+ *                             type: string
+ *                             format: date-time
+ *       '401':
+ *         description: Unauthorized
+ *       '500':
+ *         description: Server error
+ */
+router.get('/user', notificationController.getUserNotifications);
+
 
 module.exports = router;

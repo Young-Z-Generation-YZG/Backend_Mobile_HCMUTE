@@ -14,6 +14,7 @@ const OtpService = require('../infrastructure/utils/otp.service');
 const UserService = require('./user.service');
 const MailerService = require('../infrastructure/mailer/mailer.service');
 const RedisService = require('../infrastructure/redis');
+const socketService = require('../infrastructure/socket');
 
 const userModel = require('../domain/models/user.model');
 const { VERIFY_TYPES, VERIFICATION_TYPES } = require('../domain/constants/domain');
@@ -104,7 +105,30 @@ class AccessService {
          //    params,
          // );
 
+         if (socketService.isAdminOnline(adminId)) {
+            socketService.sendAdminNotification(
+               adminId,
+               notificationData,
+            );
+         }
+
+         // const notificationData = {
+         //    title: 'Login Notification',
+         //    body: 'New login to your account',
+         //    type: 'LOGIN',
+         //    createdAt: new Date().toISOString()
+         // };
+
+         // if (existUser._id) {
+         //    console.log('test01')
+         //    if (socketService.isUserOnline(existUser._id)) {
+         //       console.log('test02')
+         //       socketService.sendNotification(existUser._id, notificationData)
+         //    }
+         // }
+   
          return {
+            user_id: existUser._id,
             email: existUser.email,
             access_token: '',
             refresh_token: '',
@@ -123,6 +147,7 @@ class AccessService {
          JwtService.generateTokenPair(payload);
 
       return {
+         user_id: existUser._id,
          email: existUser.email,
          access_token: accessToken,
          refresh_token: refreshToken,
