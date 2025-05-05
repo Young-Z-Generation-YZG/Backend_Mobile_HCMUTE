@@ -11,6 +11,14 @@ class NotificationController {
       }).send(res);
    }
 
+   async getUserNotifications(req, res) {
+      new OK({
+         message: 'OK',
+         statusCode: 200,
+         data: await NotificationService.getUserNotifications(req),
+      }).send(res);
+   }
+
    // Mark a notification as read
    async markAsRead(req, res) {
       try {
